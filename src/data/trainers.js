@@ -17,7 +17,7 @@ export const trainers = [
   {
     id: 2,
     name: "Aman Singh",
-    photo: "https://images.pexels.com/photos/1547249/pexels-photo-1547249.jpeg",
+    photo: "https://images.pexels.com/photos/17210041/pexels-photo-17210041.jpeg",
     rating: 4.8,
     category: "weight-loss",
     specialization: "Weight Loss",

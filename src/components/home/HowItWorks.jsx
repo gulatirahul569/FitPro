@@ -1,4 +1,5 @@
 import { Search, UserCheck, CalendarCheck, Dumbbell } from "lucide-react";
+import Reveal from "@/components/ui/Reveal";
 
 const steps = [
   {
@@ -29,35 +30,39 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section className="py-16 px-6 md:px-12 bg-gray-50">
+    <section className="py-20 px-6 md:px-12 bg-gray-50">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-black">
-          How It Works
-        </h2>
+        <Reveal>
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-16 text-black">
+            How It Works
+          </h2>
+        </Reveal>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {steps.map((step) => {
+        <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-y-12 gap-x-8">
+          {/* Connecting line, desktop only */}
+          <div className="hidden lg:block absolute top-8 left-[12.5%] right-[12.5%] h-px bg-gray-200" />
+
+          {steps.map((step, index) => {
             const Icon = step.icon;
             return (
-              <div
-                key={step.number}
-                className="flex flex-col items-center text-center"
-              >
-                <div className="relative mb-4">
-                  <div className="w-16 h-16 rounded-full bg-black flex items-center justify-center">
-                    <Icon size={26} className="text-white" />
+              <Reveal key={step.number} delay={index * 150}>
+                <div className="relative flex flex-col items-center text-center">
+                  <div className="group relative mb-4">
+                    <div className="w-16 h-16 rounded-full bg-black flex items-center justify-center transition-transform duration-300 ease-out group-hover:scale-110 relative z-10">
+                      <Icon size={26} className="text-white" />
+                    </div>
+                    <span className="absolute -top-2 -right-2 text-xs font-bold bg-white border border-black rounded-full w-6 h-6 flex items-center justify-center z-20">
+                      {step.number}
+                    </span>
                   </div>
-                  <span className="absolute -top-2 -right-2 text-xs font-bold bg-white border border-black rounded-full w-6 h-6 flex items-center justify-center">
-                    {step.number}
-                  </span>
+                  <h3 className="text-lg font-semibold text-black mb-1">
+                    {step.title}
+                  </h3>
+                  <p className="text-sm text-gray-500 max-w-[200px]">
+                    {step.description}
+                  </p>
                 </div>
-                <h3 className="text-lg font-semibold text-black mb-1">
-                  {step.title}
-                </h3>
-                <p className="text-sm text-gray-500 max-w-[200px]">
-                  {step.description}
-                </p>
-              </div>
+              </Reveal>
             );
           })}
         </div>

@@ -1,5 +1,3 @@
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 import Hero from "@/components/home/Hero";
 import FeaturedTrainers from "@/components/home/FeaturedTrainers";
 import HowItWorks from "@/components/home/HowItWorks";
@@ -12,22 +10,16 @@ import FinalCta from "@/components/home/FinalCta";
 
 export default function Home() {
   return (
-    <>
-      <Navbar />
-
-      <main>
-        <Hero />
-        <FeaturedTrainers />
-        <HowItWorks />
-        <Categories />
-        <VideoSection />
-        <WhyChooseUs />
-        <Testimonials />
-        <BecomeTrainer />
-        <FinalCta />
-      </main>
-
-      <Footer />
-    </>
+    <main>
+      <Hero />
+      <FeaturedTrainers />
+      <HowItWorks />
+      <Categories />
+      <VideoSection />
+      <WhyChooseUs />
+      <Testimonials />
+      <BecomeTrainer />
+      <FinalCta />
+    </main>
   );
 }
