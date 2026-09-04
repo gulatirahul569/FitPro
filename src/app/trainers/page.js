@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
@@ -28,14 +28,24 @@ function TrainersContent() {
 
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState(initialCategory);
+  const [dbTrainers, setDbTrainers] = useState([]);
+
+  useEffect(() => {
+    fetch("/api/trainers/public")
+      .then((res) => res.json())
+      .then((data) => setDbTrainers(data.trainers || []))
+      .catch(() => setDbTrainers([]));
+  }, []);
+
+  const allTrainers = useMemo(() => [...trainers, ...dbTrainers], [dbTrainers]);
 
   const filtered = useMemo(() => {
-    return trainers.filter((t) => {
+    return allTrainers.filter((t) => {
       const searchQuery = query.toLowerCase();
 
       const matchesQuery =
         t.name.toLowerCase().includes(searchQuery) ||
-        t.specialization.toLowerCase().includes(searchQuery);
+        t.specialization?.toLowerCase().includes(searchQuery);
 
       const matchesCategory = category
         ? t.category === category
@@ -43,7 +53,7 @@ function TrainersContent() {
 
       return matchesQuery && matchesCategory;
     });
-  }, [query, category]);
+  }, [allTrainers, query, category]);
 
   const activeCategoryLabel = categories.find(
     (c) => c.value === category
@@ -227,4 +237,3 @@ export default function TrainersPage() {
     </Suspense>
   );
 }
-

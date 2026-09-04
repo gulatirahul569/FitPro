@@ -2,10 +2,39 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Star, MapPin, Clock, CheckCircle2, BadgeCheck } from "lucide-react";
 import { trainers } from "@/data/trainers";
+import { getTrainerProfile } from "@/lib/models/trainerProfile";
+import BookingModal from "@/components/trainers/BookingModal";
+
+async function getTrainer(id) {
+  const numericId = Number(id);
+
+  // Static mock trainers use small numeric IDs
+  if (!Number.isNaN(numericId)) {
+    return trainers.find((t) => t.id === numericId) || null;
+  }
+
+  // Otherwise, treat it as a real trainer's MongoDB userId
+  const profile = await getTrainerProfile(id);
+  if (!profile || !profile.isListed) return null;
+
+  return {
+    id: profile.userId,
+    name: profile.name,
+    photo: profile.photo,
+    rating: 5.0,
+    specialization: profile.specialization,
+    experience: profile.experience,
+    location: profile.location,
+    price: profile.price,
+    bio: profile.bio,
+    specialties: profile.specialties || [],
+    availability: profile.availability,
+  };
+}
 
 export default async function TrainerProfilePage({ params }) {
   const { id } = await params;
-  const trainer = trainers.find((t) => t.id === Number(id));
+  const trainer = await getTrainer(id);
 
   if (!trainer) return notFound();
 
@@ -26,11 +55,17 @@ export default async function TrainerProfilePage({ params }) {
           <div className="lg:col-span-2">
             <div className="flex flex-col sm:flex-row gap-6 mb-10">
               <div className="w-full sm:w-56 h-64 rounded-2xl overflow-hidden shrink-0 bg-gray-100">
-                <img
-                  src={trainer.photo}
-                  alt={trainer.name}
-                  className="h-full w-full object-cover"
-                />
+                {trainer.photo ? (
+                  <img
+                    src={trainer.photo}
+                    alt={trainer.name}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center text-4xl font-bold text-gray-300">
+                    {trainer.name?.charAt(0)?.toUpperCase()}
+                  </div>
+                )}
               </div>
 
               <div className="flex-1">
@@ -64,20 +99,22 @@ export default async function TrainerProfilePage({ params }) {
             </div>
 
             {/* Specialties */}
-            <div className="mb-10">
-              <h2 className="text-xl font-semibold text-black mb-4">Specialties</h2>
-              <div className="flex flex-wrap gap-3">
-                {trainer.specialties.map((s) => (
-                  <div
-                    key={s}
-                    className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-gray-50"
-                  >
-                    <CheckCircle2 size={15} className="text-black" />
-                    <span className="text-sm font-medium text-black">{s}</span>
-                  </div>
-                ))}
+            {trainer.specialties?.length > 0 && (
+              <div className="mb-10">
+                <h2 className="text-xl font-semibold text-black mb-4">Specialties</h2>
+                <div className="flex flex-wrap gap-3">
+                  {trainer.specialties.map((s) => (
+                    <div
+                      key={s}
+                      className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-gray-50"
+                    >
+                      <CheckCircle2 size={15} className="text-black" />
+                      <span className="text-sm font-medium text-black">{s}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Availability */}
             <div>
@@ -98,9 +135,7 @@ export default async function TrainerProfilePage({ params }) {
                 <span className="text-base font-normal text-gray-500">/month</span>
               </p>
 
-              <button className="w-full px-6 py-3 rounded-lg bg-black text-white font-medium hover:bg-gray-800 transition-colors mb-3">
-                Book a Demo Session
-              </button>
+              <BookingModal trainerId={String(trainer.id)} trainerName={trainer.name} />
               <button className="w-full px-6 py-3 rounded-lg border border-gray-300 text-black font-medium hover:border-black transition-colors">
                 Message {trainer.name.split(" ")[0]}
               </button>
