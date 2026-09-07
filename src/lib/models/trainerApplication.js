@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import connectMongoose from "@/lib/mongoose";
 
 const trainerApplicationSchema = new mongoose.Schema(
   {
@@ -66,5 +67,14 @@ const trainerApplicationSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.models.TrainerApplication ||
+const TrainerApplication =
+  mongoose.models.TrainerApplication ||
   mongoose.model("TrainerApplication", trainerApplicationSchema);
+
+export async function getApplicationByUserId(userId) {
+  await connectMongoose();
+
+  return TrainerApplication.findOne({ userId }).lean();
+}
+
+export default TrainerApplication;

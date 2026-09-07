@@ -4,13 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  Users,
-  Dumbbell,
-  ClipboardList,
-  Video,
+  User,
   Calendar,
-  CreditCard,
-  ClipboardCheck,
+  Dumbbell,
+  Settings,
   ArrowLeft,
   Menu,
   X,
@@ -18,23 +15,19 @@ import {
 import { useState } from "react";
 
 const navItems = [
-  { href: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/trainers", label: "Trainers", icon: Dumbbell },
-  { href: "/admin/applications", label: "Applications", icon: ClipboardList },
-  { href: "/admin/listing-requests", label: "Listing Requests", icon: ClipboardCheck },
-  { href: "/admin/videos", label: "Videos", icon: Video },
-  { href: "/admin/bookings", label: "Bookings", icon: Calendar },
-  { href: "/admin/payments", label: "Payments", icon: CreditCard },
+  { href: "/user/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/user/profile", label: "My Profile", icon: User },
+  { href: "/user/bookings", label: "My Bookings", icon: Calendar },
+  { href: "/user/training", label: "My Training", icon: Dumbbell },
+  { href: "/user/settings", label: "Settings", icon: Settings },
 ];
 
-export default function AdminLayout({ children }) {
+export default function UserLayout({ children }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Mobile overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -42,23 +35,16 @@ export default function AdminLayout({ children }) {
         />
       )}
 
-      {/* Sidebar */}
       <aside
-        className={`fixed lg:sticky top-0 left-0 h-screen w-64 bg-black text-white flex flex-col z-50 transition-transform duration-300 ${
+        className={`fixed lg:sticky top-0 left-0 h-screen w-64 bg-white border-r border-gray-200 flex flex-col z-50 transition-transform duration-300 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
-        <div className="h-20 flex items-center justify-between px-6 border-b border-white/10">
-          <div className="flex items-center gap-2">
-            <span className="text-xl font-extrabold">FITPRO</span>
-            <span className="text-xs bg-white/10 px-2 py-0.5 rounded-full text-white/70">
-              Admin
-            </span>
-          </div>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-white/70"
-          >
+        <div className="h-20 flex items-center justify-between px-6 border-b border-gray-100">
+          <Link href="/" className="text-xl font-extrabold text-black">
+            FIT<span className="text-gray-400">PRO</span>
+          </Link>
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-gray-500">
             <X size={22} />
           </button>
         </div>
@@ -74,8 +60,8 @@ export default function AdminLayout({ children }) {
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
                   isActive
-                    ? "bg-white text-black"
-                    : "text-white/70 hover:bg-white/10 hover:text-white"
+                    ? "bg-black text-white"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-black"
                 }`}
               >
                 <Icon size={18} />
@@ -85,10 +71,10 @@ export default function AdminLayout({ children }) {
           })}
         </nav>
 
-        <div className="p-4 border-t border-white/10">
+        <div className="p-4 border-t border-gray-100">
           <Link
             href="/"
-            className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium text-white/60 hover:bg-white/10 hover:text-white transition-colors"
+            className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-black transition-colors"
           >
             <ArrowLeft size={18} />
             Back to Website
@@ -96,14 +82,12 @@ export default function AdminLayout({ children }) {
         </div>
       </aside>
 
-      {/* Main content area */}
       <div className="flex-1 min-w-0">
-        {/* Mobile top bar */}
         <div className="lg:hidden sticky top-0 z-30 h-16 bg-white border-b border-gray-200 flex items-center px-4">
           <button onClick={() => setSidebarOpen(true)} className="text-gray-700">
             <Menu size={24} />
           </button>
-          <span className="ml-4 font-semibold text-black">Admin Panel</span>
+          <span className="ml-4 font-semibold text-black">My Account</span>
         </div>
 
         <main className="p-6 md:p-8">{children}</main>

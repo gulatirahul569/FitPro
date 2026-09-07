@@ -30,7 +30,12 @@ export default function ProfileView({ initialData }) {
         return;
       }
 
-      setData({ ...data, isListed: result.profile.isListed });
+      setData({
+        ...data,
+        isListed: result.profile.isListed,
+        listingStatus: result.profile.listingStatus,
+        listingAdminNote: result.profile.listingAdminNote,
+      });
     } catch (err) {
       setListingError("Something went wrong. Please try again.");
     } finally {
@@ -156,26 +161,56 @@ export default function ProfileView({ initialData }) {
               Edit Profile
             </button>
 
-            <button
-              onClick={handleToggleListing}
-              disabled={listingLoading}
-              className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors mb-3 disabled:opacity-60 ${
-                data.isListed
-                  ? "border border-gray-300 text-gray-700 hover:border-gray-400"
-                  : "bg-green-600 text-white hover:bg-green-700"
-              }`}
-            >
-              {data.isListed ? <EyeOff size={16} /> : <Globe size={16} />}
-              {listingLoading
-                ? "Updating..."
-                : data.isListed
-                ? "Unlist from Trainers Page"
-                : "List My Profile"}
-            </button>
+            {/* Status badge - always visible, single source of truth */}
+            <div className="mb-3">
+              {data.listingStatus === "pending" ? (
+                <div className="w-full px-4 py-2.5 rounded-lg bg-yellow-50 text-yellow-700 text-sm font-medium text-center">
+                  ⏳ Awaiting Admin Review
+                </div>
+              ) : data.isListed ? (
+                <div className="w-full px-4 py-2.5 rounded-lg bg-green-50 text-green-700 text-sm font-medium text-center">
+                  ✓ Live on the public Trainers page
+                </div>
+              ) : data.listingStatus === "approved" ? (
+                <div className="w-full px-4 py-2.5 rounded-lg bg-gray-100 text-gray-600 text-sm font-medium text-center">
+                  Approved, currently unlisted
+                </div>
+              ) : data.listingStatus === "rejected" ? (
+                <div className="w-full px-4 py-2.5 rounded-lg bg-red-50 text-red-700 text-sm font-medium text-center">
+                  ✕ Listing request rejected
+                </div>
+              ) : (
+                <div className="w-full px-4 py-2.5 rounded-lg bg-gray-100 text-gray-500 text-sm font-medium text-center">
+                  Not yet listed
+                </div>
+              )}
+            </div>
 
-            {data.isListed && (
-              <p className="text-xs text-green-600 text-center mb-3">
-                ✓ Live on the public Trainers page
+            {/* Action button - only shown when there's actually an action to take */}
+            {data.listingStatus !== "pending" && (
+              <button
+                onClick={handleToggleListing}
+                disabled={listingLoading}
+                className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors mb-3 disabled:opacity-60 ${
+                  data.isListed
+                    ? "border border-gray-300 text-gray-700 hover:border-gray-400"
+                    : "bg-green-600 text-white hover:bg-green-700"
+                }`}
+              >
+                {data.isListed ? <EyeOff size={16} /> : <Globe size={16} />}
+                {listingLoading
+                  ? "Updating..."
+                  : data.isListed
+                  ? "Unlist from Trainers Page"
+                  : data.listingStatus === "approved"
+                  ? "Go Live"
+                  : "Request to Go Live"}
+              </button>
+            )}
+
+            {data.listingStatus === "rejected" && data.listingAdminNote && (
+              <p className="text-xs text-gray-500 text-center mb-3">
+                Admin note: "{data.listingAdminNote}"
               </p>
             )}
 

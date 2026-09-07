@@ -25,6 +25,8 @@ export default async function TrainerProfilePage() {
     bio: existingProfile?.bio || "",
     specialties: existingProfile?.specialties || [],
     availability: existingProfile?.availability || "",
+    listingStatus: existingProfile?.listingStatus || "draft",
+    listingAdminNote: existingProfile?.listingAdminNote || "",
   };
 
   return (

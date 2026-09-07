@@ -1,5 +1,6 @@
 import { auth } from "../../../auth";
 import { redirect } from "next/navigation";
+import { getBookingsByTrainer } from "@/lib/models/booking";
 import Link from "next/link";
 import {
   Users,
@@ -29,11 +30,13 @@ export default async function TrainerDashboardPage() {
     { label: "This Month's Earnings", value: "₹18,400", icon: Wallet, change: "+12% vs last month" },
   ];
 
-  const recentBookings = [
-    { client: "Ananya Verma", type: "1-on-1 Strength Session", time: "Today, 5:00 PM", status: "confirmed" },
-    { client: "Rohan Mehta", type: "Free Demo Call", time: "Tomorrow, 9:00 AM", status: "pending" },
-    { client: "Priya Nair", type: "Monthly Check-in", time: "Fri, 11:00 AM", status: "confirmed" },
-  ];
+  const allBookings = await getBookingsByTrainer(session.user.id);
+  const recentBookings = allBookings.slice(0, 3).map((b) => ({
+    client: b.userName,
+    type: b.type === "demo" ? "Free Demo Session" : "Paid Session",
+    time: `${b.date}, ${b.time}`,
+    status: b.status,
+  }));
 
   const recentReviews = [
     { client: "Ananya Verma", rating: 5, comment: "Best trainer I've worked with — sessions are always well-structured." },
@@ -119,11 +122,12 @@ export default async function TrainerDashboardPage() {
                 <div className="text-right">
                   <p className="text-sm text-gray-700">{booking.time}</p>
                   <span
-                    className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                      booking.status === "confirmed"
+                    className={`text-xs font-medium px-2 py-0.5 rounded-full ${booking.status === "confirmed" || booking.status === "completed"
                         ? "bg-green-50 text-green-700"
-                        : "bg-yellow-50 text-yellow-700"
-                    }`}
+                        : booking.status === "cancelled"
+                          ? "bg-gray-100 text-gray-500"
+                          : "bg-yellow-50 text-yellow-700"
+                      }`}
                   >
                     {booking.status}
                   </span>
