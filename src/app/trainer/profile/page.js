@@ -12,22 +12,25 @@ export default async function TrainerProfilePage() {
 
   const existingProfile = await getTrainerProfile(session.user.id);
 
-  const initialData = {
-    name: session.user.name || "",
-    email: session.user.email || "",
-    photo: existingProfile?.photo || "",
-    phone: existingProfile?.phone || "",
-    specialization: existingProfile?.specialization || "",
-    experience: existingProfile?.experience || "",
-    certification: existingProfile?.certification || "",
-    location: existingProfile?.location || "",
-    price: existingProfile?.price || "",
-    bio: existingProfile?.bio || "",
-    specialties: existingProfile?.specialties || [],
-    availability: existingProfile?.availability || "",
-    listingStatus: existingProfile?.listingStatus || "draft",
-    listingAdminNote: existingProfile?.listingAdminNote || "",
-  };
+const initialData = {
+  name: session.user.name || "",
+  email: session.user.email || "",
+  photo: existingProfile?.photo || "",
+  phone: existingProfile?.phone || "",
+  specialization: existingProfile?.specialization || "",
+  experience: existingProfile?.experience || "",
+  certification: existingProfile?.certification || "",
+  location: existingProfile?.location || "",
+  price: existingProfile?.price || "",
+  bio: existingProfile?.bio || "",
+  specialties: existingProfile?.specialties || [],
+  availability: existingProfile?.availability || "",
+
+  // Listing fields
+  isListed: existingProfile?.isListed || false,
+  listingStatus: existingProfile?.listingStatus || "draft",
+  listingAdminNote: existingProfile?.listingAdminNote || "",
+};
 
   return (
     <div>
