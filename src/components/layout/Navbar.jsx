@@ -20,10 +20,11 @@ import {
 
 const navLinks = [
   { href: "/", label: "Home" },
+  { href: "/about", label: "About" },
   { href: "/trainers", label: "Trainers" },
   { href: "/videos", label: "Videos" },
-  { href: "/programs", label: "Programs" },
-  { href: "/about", label: "About" },
+  { href: "/gyms", label: "Gyms" },
+  
 ];
 
 export default function Navbar() {

@@ -2,7 +2,7 @@
 export default function AboutPage() {
   return (
     <main>
-      <h1>programs</h1>
+      <h1>Gym will come with trainer</h1>
 
      
     </main>
