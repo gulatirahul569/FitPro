@@ -22,8 +22,10 @@ export default async function ApplicationsPage() {
     ...application,
     _id: application._id.toString(),
     userId: application.userId?.toString(),
+    reviewedBy: application.reviewedBy?.toString() || null,
     createdAt: application.createdAt?.toISOString(),
     updatedAt: application.updatedAt?.toISOString(),
+    reviewedAt: application.reviewedAt?.toISOString() || null,
   }));
 
   return (

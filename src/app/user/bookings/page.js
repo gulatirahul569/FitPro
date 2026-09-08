@@ -1,15 +1,9 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getBookingsByUser } from "@/lib/models/booking";
-import { Calendar, Clock } from "lucide-react";
+import { getDb } from "@/lib/db";
 import Link from "next/link";
-
-const statusStyles = {
-  pending: "bg-yellow-50 text-yellow-700",
-  confirmed: "bg-blue-50 text-blue-700",
-  completed: "bg-green-50 text-green-700",
-  cancelled: "bg-gray-100 text-gray-500",
-};
+import BookingCard from "./BookingCard";
 
 export default async function UserBookingsPage() {
   const session = await auth();
@@ -19,6 +13,14 @@ export default async function UserBookingsPage() {
   }
 
   const bookings = await getBookingsByUser(session.user.id);
+
+  const db = await getDb();
+  const bookingIds = bookings.map((b) => b._id.toString());
+  const existingReviews = await db
+    .collection("reviews")
+    .find({ bookingId: { $in: bookingIds } })
+    .toArray();
+  const reviewedBookingIds = new Set(existingReviews.map((r) => r.bookingId));
 
   return (
     <div>
@@ -40,36 +42,11 @@ export default async function UserBookingsPage() {
       ) : (
         <div className="flex flex-col gap-3">
           {bookings.map((booking) => (
-            <div
+            <BookingCard
               key={booking._id.toString()}
-              className="bg-white rounded-2xl border border-gray-200 p-5 flex flex-col sm:flex-row sm:items-center gap-4"
-            >
-              <div className="w-11 h-11 rounded-full bg-black text-white flex items-center justify-center text-sm font-semibold shrink-0">
-                {booking.trainerName?.charAt(0)?.toUpperCase()}
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap mb-1">
-                  <p className="font-medium text-black text-sm">{booking.trainerName}</p>
-                  <span
-                    className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${statusStyles[booking.status]}`}
-                  >
-                    {booking.status}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-500 mb-1">
-                  {booking.type === "demo" ? "Free Demo Session" : "Paid Session"}
-                </p>
-                <div className="flex items-center gap-4 text-xs text-gray-500">
-                  <span className="flex items-center gap-1">
-                    <Calendar size={12} /> {booking.date}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock size={12} /> {booking.time}
-                  </span>
-                </div>
-              </div>
-            </div>
+              booking={{ ...booking, _id: booking._id.toString() }}
+              hasReview={reviewedBookingIds.has(booking._id.toString())}
+            />
           ))}
         </div>
       )}

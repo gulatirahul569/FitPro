@@ -1,6 +1,9 @@
 import { auth } from "../../../auth";
 import { redirect } from "next/navigation";
-import { getBookingsByTrainer } from "@/lib/models/booking";
+import { getBookingsByTrainer, getUniqueClientsForTrainer } from "@/lib/models/booking";
+import { getTrainerProfile } from "@/lib/models/trainerProfile";
+import { getReviewsByTrainer, getTrainerRatingSummary } from "@/lib/models/review";
+import StarRating from "@/components/ui/StarRating";
 import Link from "next/link";
 import {
   Users,
@@ -9,7 +12,6 @@ import {
   Star,
   Video,
   Clock,
-  Plus,
   ArrowRight,
 } from "lucide-react";
 
@@ -22,15 +24,14 @@ export default async function TrainerDashboardPage() {
 
   const firstName = session.user.name?.split(" ")[0];
 
-  // Dummy data — will be replaced with real MongoDB queries once backend APIs are built
-  const stats = [
-    { label: "Total Clients", value: "24", icon: Users, change: "+3 this month" },
-    { label: "Active Programs", value: "6", icon: Video, change: "2 in draft" },
-    { label: "Upcoming Sessions", value: "8", icon: Calendar, change: "Next: Today, 5 PM" },
-    { label: "This Month's Earnings", value: "₹18,400", icon: Wallet, change: "+12% vs last month" },
-  ];
+  const [allBookings, clients, profile, allReviews, ratingSummary] = await Promise.all([
+    getBookingsByTrainer(session.user.id),
+    getUniqueClientsForTrainer(session.user.id),
+    getTrainerProfile(session.user.id),
+    getReviewsByTrainer(session.user.id),
+    getTrainerRatingSummary(session.user.id),
+  ]);
 
-  const allBookings = await getBookingsByTrainer(session.user.id);
   const recentBookings = allBookings.slice(0, 3).map((b) => ({
     client: b.userName,
     type: b.type === "demo" ? "Free Demo Session" : "Paid Session",
@@ -38,10 +39,27 @@ export default async function TrainerDashboardPage() {
     status: b.status,
   }));
 
-  const recentReviews = [
-    { client: "Ananya Verma", rating: 5, comment: "Best trainer I've worked with — sessions are always well-structured." },
-    { client: "Karan Bedi", rating: 4, comment: "Great communication and flexible scheduling." },
+  const upcomingCount = allBookings.filter(
+    (b) => b.status === "pending" || b.status === "confirmed"
+  ).length;
+
+  const completedSessions = allBookings.filter(
+    (b) => b.status === "completed" && b.type === "session"
+  ).length;
+  const estimatedEarnings = completedSessions * (Number(profile?.price) || 0);
+
+  const stats = [
+    { label: "Total Clients", value: clients.length, icon: Users, change: `${clients.length} unique client${clients.length !== 1 ? "s" : ""}` },
+    { label: "Upcoming Sessions", value: upcomingCount, icon: Calendar, change: upcomingCount > 0 ? "Pending or confirmed" : "None scheduled" },
+    { label: "This Month's Earnings", value: `₹${estimatedEarnings.toLocaleString("en-IN")}`, icon: Wallet, change: `${completedSessions} completed session${completedSessions !== 1 ? "s" : ""}` },
+    { label: "Average Rating", value: ratingSummary.averageRating ?? "—", icon: Star, change: `${ratingSummary.totalReviews} review${ratingSummary.totalReviews !== 1 ? "s" : ""}` },
   ];
+
+  const recentReviews = allReviews.slice(0, 3).map((r) => ({
+    client: r.userName,
+    rating: r.rating,
+    comment: r.comment,
+  }));
 
   const quickActions = [
     { label: "Upload Video", href: "/trainer/videos", icon: Video },
@@ -112,29 +130,34 @@ export default async function TrainerDashboardPage() {
             </Link>
           </div>
 
-          <div className="flex flex-col divide-y divide-gray-100">
-            {recentBookings.map((booking, i) => (
-              <div key={i} className="flex items-center justify-between py-3">
-                <div>
-                  <p className="font-medium text-black text-sm">{booking.client}</p>
-                  <p className="text-xs text-gray-500">{booking.type}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-700">{booking.time}</p>
-                  <span
-                    className={`text-xs font-medium px-2 py-0.5 rounded-full ${booking.status === "confirmed" || booking.status === "completed"
-                        ? "bg-green-50 text-green-700"
-                        : booking.status === "cancelled"
+          {recentBookings.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-8">No bookings yet.</p>
+          ) : (
+            <div className="flex flex-col divide-y divide-gray-100">
+              {recentBookings.map((booking, i) => (
+                <div key={i} className="flex items-center justify-between py-3">
+                  <div>
+                    <p className="font-medium text-black text-sm">{booking.client}</p>
+                    <p className="text-xs text-gray-500">{booking.type}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-gray-700">{booking.time}</p>
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                        booking.status === "confirmed" || booking.status === "completed"
+                          ? "bg-green-50 text-green-700"
+                          : booking.status === "cancelled"
                           ? "bg-gray-100 text-gray-500"
                           : "bg-yellow-50 text-yellow-700"
                       }`}
-                  >
-                    {booking.status}
-                  </span>
+                    >
+                      {booking.status}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Recent reviews */}
@@ -149,21 +172,21 @@ export default async function TrainerDashboardPage() {
             </Link>
           </div>
 
-          <div className="flex flex-col gap-4">
-            {recentReviews.map((review, i) => (
-              <div key={i} className="pb-4 border-b border-gray-100 last:border-0 last:pb-0">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="font-medium text-black text-sm">{review.client}</p>
-                  <div className="flex items-center gap-0.5 text-yellow-500">
-                    {Array.from({ length: review.rating }).map((_, idx) => (
-                      <Star key={idx} size={12} fill="currentColor" />
-                    ))}
+          {recentReviews.length === 0 ? (
+            <p className="text-sm text-gray-400 text-center py-8">No reviews yet.</p>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {recentReviews.map((review, i) => (
+                <div key={i} className="pb-4 border-b border-gray-100 last:border-0 last:pb-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="font-medium text-black text-sm">{review.client}</p>
+                    <StarRating rating={review.rating} size={12} />
                   </div>
+                  <p className="text-xs text-gray-500 leading-relaxed">{review.comment}</p>
                 </div>
-                <p className="text-xs text-gray-500 leading-relaxed">{review.comment}</p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

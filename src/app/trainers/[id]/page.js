@@ -1,27 +1,33 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Star, MapPin, Clock, CheckCircle2, BadgeCheck } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, CheckCircle2, BadgeCheck } from "lucide-react";
 import { trainers } from "@/data/trainers";
 import { getTrainerProfile } from "@/lib/models/trainerProfile";
+import { getTrainerRatingSummary } from "@/lib/models/review";
+import { getReviewableBooking } from "@/lib/models/booking";
+import { auth } from "@/auth";
 import BookingModal from "@/components/trainers/BookingModal";
+import RateTrainerSection from "@/components/trainers/RateTrainerSection";
+import StarRating from "@/components/ui/StarRating";
 
 async function getTrainer(id) {
   const numericId = Number(id);
 
-  // Static mock trainers use small numeric IDs
   if (!Number.isNaN(numericId)) {
     return trainers.find((t) => t.id === numericId) || null;
   }
 
-  // Otherwise, treat it as a real trainer's MongoDB userId
   const profile = await getTrainerProfile(id);
   if (!profile || !profile.isListed) return null;
+
+  const ratingSummary = await getTrainerRatingSummary(id);
 
   return {
     id: profile.userId,
     name: profile.name,
     photo: profile.photo,
-    rating: 5.0,
+    rating: ratingSummary.averageRating,
+    totalReviews: ratingSummary.totalReviews,
     specialization: profile.specialization,
     experience: profile.experience,
     location: profile.location,
@@ -38,10 +44,17 @@ export default async function TrainerProfilePage({ params }) {
 
   if (!trainer) return notFound();
 
+  const session = await auth();
+
+  // Only check reviewability for real DB trainers, and only if logged in as a different user
+  let reviewableBooking = null;
+  if (session?.user && session.user.id !== String(trainer.id) && !Number.isNaN(Number(id)) === false) {
+    reviewableBooking = await getReviewableBooking(session.user.id, String(trainer.id));
+  }
+
   return (
     <section className="bg-white min-h-screen">
       <div className="max-w-6xl mx-auto px-6 md:px-12 py-8">
-        {/* Back button */}
         <Link
           href="/trainers"
           className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-black transition-colors mb-8"
@@ -51,7 +64,6 @@ export default async function TrainerProfilePage({ params }) {
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Left: main content */}
           <div className="lg:col-span-2">
             <div className="flex flex-col sm:flex-row gap-6 mb-10">
               <div className="w-full sm:w-56 h-64 rounded-2xl overflow-hidden shrink-0 bg-gray-100">
@@ -75,11 +87,16 @@ export default async function TrainerProfilePage({ params }) {
                 </div>
                 <p className="text-lg text-gray-600 mb-4">{trainer.specialization}</p>
 
-                <div className="flex flex-wrap gap-4 text-sm text-gray-500">
-                  <div className="flex items-center gap-1.5">
-                    <Star size={16} className="text-yellow-500" fill="currentColor" />
-                    <span className="font-medium text-black">{trainer.rating}</span> rating
-                  </div>
+                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                  {trainer.rating !== null && trainer.rating !== undefined ? (
+                    <div className="flex items-center gap-2">
+                      <StarRating rating={trainer.rating} size={16} />
+                      <span className="font-medium text-black">{trainer.rating.toFixed(1)}</span>
+                      <span>({trainer.totalReviews})</span>
+                    </div>
+                  ) : (
+                    <span className="font-medium text-black">New — no ratings yet</span>
+                  )}
                   <div className="flex items-center gap-1.5">
                     <MapPin size={16} />
                     {trainer.location}
@@ -92,13 +109,11 @@ export default async function TrainerProfilePage({ params }) {
               </div>
             </div>
 
-            {/* About */}
             <div className="mb-10">
               <h2 className="text-xl font-semibold text-black mb-3">About</h2>
               <p className="text-gray-700 leading-relaxed">{trainer.bio}</p>
             </div>
 
-            {/* Specialties */}
             {trainer.specialties?.length > 0 && (
               <div className="mb-10">
                 <h2 className="text-xl font-semibold text-black mb-4">Specialties</h2>
@@ -116,7 +131,6 @@ export default async function TrainerProfilePage({ params }) {
               </div>
             )}
 
-            {/* Availability */}
             <div>
               <h2 className="text-xl font-semibold text-black mb-3">Availability</h2>
               <div className="rounded-2xl border border-gray-200 p-5 flex items-center gap-3">
@@ -126,7 +140,6 @@ export default async function TrainerProfilePage({ params }) {
             </div>
           </div>
 
-          {/* Right: sticky booking card */}
           <div className="lg:col-span-1">
             <div className="sticky top-8 rounded-2xl border border-gray-200 p-6 shadow-sm">
               <p className="text-sm text-gray-500 mb-1">Starting from</p>
@@ -136,6 +149,11 @@ export default async function TrainerProfilePage({ params }) {
               </p>
 
               <BookingModal trainerId={String(trainer.id)} trainerName={trainer.name} />
+
+              {reviewableBooking && (
+                <RateTrainerSection booking={reviewableBooking} />
+              )}
+
               <button className="w-full px-6 py-3 rounded-lg border border-gray-300 text-black font-medium hover:border-black transition-colors">
                 Message {trainer.name.split(" ")[0]}
               </button>
@@ -151,7 +169,11 @@ export default async function TrainerProfilePage({ params }) {
                 </div>
                 <div className="flex justify-between">
                   <span>Rating</span>
-                  <span className="text-black font-medium">{trainer.rating} ★</span>
+                  <span className="text-black font-medium">
+                    {trainer.rating !== null && trainer.rating !== undefined
+                      ? `${trainer.rating.toFixed(1)} ★`
+                      : "New"}
+                  </span>
                 </div>
               </div>
             </div>

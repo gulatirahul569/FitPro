@@ -95,3 +95,39 @@ export async function getUniqueClientsForTrainer(trainerId) {
     (a, b) => new Date(b.since) - new Date(a.since)
   );
 }
+
+export async function getAllBookings() {
+  const db = await getDb();
+  return db.collection("bookings").find({}).sort({ createdAt: -1 }).toArray();
+}
+export async function getCompletedPaidBookings() {
+  const db = await getDb();
+  return db
+    .collection("bookings")
+    .find({ status: "completed", type: "session" })
+    .sort({ updatedAt: -1 })
+    .toArray();
+}
+
+export async function getReviewableBooking(userId, trainerId) {
+  const db = await getDb();
+
+  // Find a completed booking between this user and trainer that hasn't been reviewed yet
+  const bookings = await db
+    .collection("bookings")
+    .find({ userId, trainerId, status: "completed" })
+    .sort({ updatedAt: -1 })
+    .toArray();
+
+  if (bookings.length === 0) return null;
+
+  const bookingIds = bookings.map((b) => b._id.toString());
+  const reviewedIds = await db
+    .collection("reviews")
+    .find({ bookingId: { $in: bookingIds } })
+    .toArray();
+  const reviewedSet = new Set(reviewedIds.map((r) => r.bookingId));
+
+  const unreviewed = bookings.find((b) => !reviewedSet.has(b._id.toString()));
+  return unreviewed || null;
+}

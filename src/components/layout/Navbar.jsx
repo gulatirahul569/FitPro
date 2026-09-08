@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import {
   Dumbbell,
@@ -27,6 +28,7 @@ const navLinks = [
 
 export default function Navbar() {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
 
   const [mobileMenu, setMobileMenu] = useState(false);
   const [profileMenu, setProfileMenu] = useState(false);
@@ -43,6 +45,12 @@ export default function Navbar() {
   const isNormalUser = role === "user";
   const isTrainer = role === "trainer";
   const isAdmin = role === "admin";
+
+  // Dashboard routes
+  const isDashboard =
+    pathname.startsWith("/user/") ||
+    pathname.startsWith("/trainer/") ||
+    pathname.startsWith("/admin/");
 
   // Become a Trainer:
   // Logged out -> SHOW
@@ -61,9 +69,12 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur">
+    <header
+      className={`${
+        isDashboard ? "relative" : "sticky top-0"
+      } z-50 border-b border-gray-200 bg-white/95 backdrop-blur`}
+    >
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
-
         {/* =====================================================
             LOGO
         ====================================================== */}
@@ -104,7 +115,6 @@ export default function Navbar() {
         ====================================================== */}
 
         <div className="hidden items-center gap-3 md:flex">
-
           {/* =================================================
               LOGGED OUT
           ================================================== */}
@@ -133,8 +143,8 @@ export default function Navbar() {
 
           {isLoggedIn && (
             <div className="flex items-center gap-3">
-
               {/* Become a Trainer - ONLY USER */}
+
               {showBecomeTrainer && (
                 <Link
                   href="/become-trainer"
@@ -145,8 +155,8 @@ export default function Navbar() {
               )}
 
               {/* Profile */}
-              <div className="relative">
 
+              <div className="relative">
                 <button
                   onClick={() => setProfileMenu(!profileMenu)}
                   className="flex items-center gap-2 rounded-full border border-gray-200 py-1.5 pl-1.5 pr-3 transition-colors hover:border-gray-300"
@@ -174,16 +184,16 @@ export default function Navbar() {
                 {profileMenu && (
                   <>
                     {/* Backdrop */}
+
                     <div
                       className="fixed inset-0 z-40"
                       onClick={() => setProfileMenu(false)}
                     />
 
                     <div className="absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl">
-
                       {/* User Information */}
-                      <div className="border-b border-gray-100 px-4 py-4">
 
+                      <div className="border-b border-gray-100 px-4 py-4">
                         <p className="font-semibold text-black">
                           {user?.name}
                         </p>
@@ -197,7 +207,6 @@ export default function Navbar() {
                             {role}
                           </p>
                         )}
-
                       </div>
 
                       {/* =================================================
@@ -205,7 +214,6 @@ export default function Navbar() {
                       ================================================== */}
 
                       <div className="py-2">
-
                         {/* ================= USER ================= */}
 
                         {isNormalUser && (
@@ -293,7 +301,6 @@ export default function Navbar() {
                             />
                           </>
                         )}
-
                       </div>
 
                       {/* =================================================
@@ -301,7 +308,6 @@ export default function Navbar() {
                       ================================================== */}
 
                       <div className="border-t border-gray-100 py-2">
-
                         <button
                           onClick={handleLogout}
                           className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
@@ -309,13 +315,10 @@ export default function Navbar() {
                           <LogOut size={17} />
                           Logout
                         </button>
-
                       </div>
-
                     </div>
                   </>
                 )}
-
               </div>
             </div>
           )}
@@ -331,7 +334,6 @@ export default function Navbar() {
           aria-label="Toggle menu"
         >
           <div className="relative h-6 w-6">
-
             <Menu
               size={24}
               className={`absolute inset-0 transition-all duration-300 ${
@@ -349,10 +351,8 @@ export default function Navbar() {
                   : "scale-50 -rotate-90 opacity-0"
               }`}
             />
-
           </div>
         </button>
-
       </div>
 
       {/* =====================================================
@@ -367,8 +367,8 @@ export default function Navbar() {
         }`}
       >
         <nav className="flex flex-col gap-4 px-6 py-5">
-
           {/* Main Navigation */}
+
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -386,7 +386,6 @@ export default function Navbar() {
 
           {!isLoggedIn && (
             <div className="mt-2 flex flex-col gap-3">
-
               <Link
                 href="/become-trainer"
                 onClick={() => setMobileMenu(false)}
@@ -402,7 +401,6 @@ export default function Navbar() {
               >
                 Login
               </Link>
-
             </div>
           )}
 
@@ -412,10 +410,9 @@ export default function Navbar() {
 
           {isLoggedIn && (
             <div className="mt-2 flex flex-col gap-1 border-t border-gray-100 pt-4">
-
               {/* User Information */}
-              <div className="flex items-center gap-3 px-1 pb-3">
 
+              <div className="flex items-center gap-3 px-1 pb-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-sm font-semibold text-white">
                   {firstName?.charAt(0)?.toUpperCase()}
                 </div>
@@ -435,7 +432,6 @@ export default function Navbar() {
                     </p>
                   )}
                 </div>
-
               </div>
 
               {/* =================================================
@@ -445,6 +441,7 @@ export default function Navbar() {
               {isNormalUser && (
                 <>
                   {/* Become Trainer */}
+
                   <Link
                     href="/become-trainer"
                     onClick={() => setMobileMenu(false)}
@@ -454,6 +451,7 @@ export default function Navbar() {
                   </Link>
 
                   {/* Profile */}
+
                   <ProfileMenuItem
                     href="/user/profile"
                     icon={User}
@@ -462,6 +460,7 @@ export default function Navbar() {
                   />
 
                   {/* Bookings */}
+
                   <ProfileMenuItem
                     href="/user/bookings"
                     icon={Calendar}
@@ -470,6 +469,7 @@ export default function Navbar() {
                   />
 
                   {/* Training */}
+
                   <ProfileMenuItem
                     href="/user/training"
                     icon={BookOpen}
@@ -478,6 +478,7 @@ export default function Navbar() {
                   />
 
                   {/* Settings */}
+
                   <ProfileMenuItem
                     href="/user/settings"
                     icon={Settings}
@@ -494,6 +495,7 @@ export default function Navbar() {
               {isTrainer && (
                 <>
                   {/* Trainer Profile */}
+
                   <ProfileMenuItem
                     href="/trainer/profile"
                     icon={User}
@@ -502,6 +504,7 @@ export default function Navbar() {
                   />
 
                   {/* Trainer Dashboard */}
+
                   <ProfileMenuItem
                     href="/trainer/dashboard"
                     icon={LayoutDashboard}
@@ -510,6 +513,7 @@ export default function Navbar() {
                   />
 
                   {/* Trainer Settings */}
+
                   <ProfileMenuItem
                     href="/trainer/settings"
                     icon={Settings}
@@ -526,6 +530,7 @@ export default function Navbar() {
               {isAdmin && (
                 <>
                   {/* Admin Profile */}
+
                   <ProfileMenuItem
                     href="/admin/profile"
                     icon={User}
@@ -534,6 +539,7 @@ export default function Navbar() {
                   />
 
                   {/* Admin Dashboard */}
+
                   <ProfileMenuItem
                     href="/admin/dashboard"
                     icon={ShieldCheck}
@@ -542,6 +548,7 @@ export default function Navbar() {
                   />
 
                   {/* Admin Settings */}
+
                   <ProfileMenuItem
                     href="/admin/settings"
                     icon={Settings}
@@ -562,10 +569,8 @@ export default function Navbar() {
                 <LogOut size={17} />
                 Logout
               </button>
-
             </div>
           )}
-
         </nav>
       </div>
     </header>
