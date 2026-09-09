@@ -2,6 +2,7 @@ export const authConfig = {
   pages: {
     signIn: "/login",
   },
+
   callbacks: {
     authorized({ auth, request }) {
       const isLoggedIn = !!auth?.user;
@@ -11,6 +12,7 @@ export const authConfig = {
       const isTrainerRoute = pathname.startsWith("/trainer");
       const isAdminRoute = pathname.startsWith("/admin");
       const isUserRoute = pathname.startsWith("/user");
+      const isGymOwnerRoute = pathname.startsWith("/gym-owner");
 
       if (isTrainerRoute) {
         if (!isLoggedIn) return false;
@@ -26,9 +28,14 @@ export const authConfig = {
         return isLoggedIn;
       }
 
-      // All other routes (public pages) are always allowed
+      if (isGymOwnerRoute) {
+        if (!isLoggedIn) return false;
+        return role === "gym-owner" || role === "admin";
+      }
+
       return true;
     },
   },
-  providers: [], // actual providers are added in auth.js, not here
+
+  providers: [],
 };

@@ -177,3 +177,11 @@ export async function changePassword(userId, currentPassword, newPassword) {
 
   return true;
 }
+
+export async function findUserByEmailForAssignment(email) {
+  const db = await getDb();
+  return db.collection("users").findOne(
+    { email: email.toLowerCase() },
+    { projection: { password: 0 } }
+  );
+}

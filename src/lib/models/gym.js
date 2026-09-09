@@ -65,3 +65,20 @@ export async function getTrainersByGymId(gymId) {
     .find({ gymId, isListed: true })
     .toArray();
 }
+
+export async function assignGymOwner(gymId, ownerId) {
+  const db = await getDb();
+
+  const result = await db.collection("gyms").findOneAndUpdate(
+    { _id: new ObjectId(gymId) },
+    { $set: { ownerId, updatedAt: new Date() } },
+    { returnDocument: "after" }
+  );
+
+  return result;
+}
+
+export async function getGymByOwnerId(ownerId) {
+  const db = await getDb();
+  return db.collection("gyms").findOne({ ownerId });
+}

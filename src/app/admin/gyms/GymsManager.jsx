@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, X, Edit2, Trash2, MapPin } from "lucide-react";
+import {
+  Plus,
+  X,
+  Edit2,
+  Trash2,
+  MapPin,
+  UserPlus,
+} from "lucide-react";
 
 const emptyForm = {
   name: "",
@@ -15,11 +22,18 @@ const emptyForm = {
 
 export default function GymsManager({ initialGyms }) {
   const [gyms, setGyms] = useState(initialGyms);
+
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  // Gym owner assignment state
+  const [assigningId, setAssigningId] = useState(null);
+  const [ownerEmail, setOwnerEmail] = useState("");
+  const [assignError, setAssignError] = useState("");
+  const [assignLoading, setAssignLoading] = useState(false);
 
   const openCreateForm = () => {
     setForm(emptyForm);
@@ -38,17 +52,22 @@ export default function GymsManager({ initialGyms }) {
       amenitiesInput: (gym.amenities || []).join(", "),
       phone: gym.phone || "",
     });
+
     setEditingId(gym._id);
     setShowForm(true);
     setError("");
   };
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     setSaving(true);
     setError("");
 
@@ -68,27 +87,51 @@ export default function GymsManager({ initialGyms }) {
     };
 
     try {
-      const url = editingId ? `/api/admin/gyms/${editingId}` : "/api/admin/gyms";
+      const url = editingId
+        ? `/api/admin/gyms/${editingId}`
+        : "/api/admin/gyms";
+
       const method = editingId ? "PATCH" : "POST";
 
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(payload),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+
+      if (!res.ok) {
+        throw new Error(data.error || "Something went wrong.");
+      }
 
       if (editingId) {
         setGyms((current) =>
-          current.map((g) => (g._id === editingId ? { ...g, ...data.gym, amenities } : g))
+          current.map((g) =>
+            g._id === editingId
+              ? {
+                  ...g,
+                  ...data.gym,
+                  amenities,
+                }
+              : g
+          )
         );
       } else {
-        setGyms((current) => [{ ...data.gym, _id: data.gym._id.toString() }, ...current]);
+        setGyms((current) => [
+          {
+            ...data.gym,
+            _id: data.gym._id.toString(),
+          },
+          ...current,
+        ]);
       }
 
       setShowForm(false);
+      setForm(emptyForm);
+      setEditingId(null);
     } catch (err) {
       setError(err.message || "Something went wrong.");
     } finally {
@@ -97,20 +140,88 @@ export default function GymsManager({ initialGyms }) {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("Delete this gym? This cannot be undone.")) return;
+    if (!confirm("Delete this gym? This cannot be undone.")) {
+      return;
+    }
 
     try {
-      const res = await fetch(`/api/admin/gyms/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete");
+      const res = await fetch(`/api/admin/gyms/${id}`, {
+        method: "DELETE",
+      });
 
-      setGyms((current) => current.filter((g) => g._id !== id));
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to delete gym.");
+      }
+
+      setGyms((current) =>
+        current.filter((g) => g._id !== id)
+      );
     } catch (err) {
-      alert("Failed to delete gym.");
+      alert(err.message || "Failed to delete gym.");
+    }
+  };
+
+  // Assign gym owner
+  const handleAssignOwner = async (gymId) => {
+    if (!ownerEmail.trim()) {
+      setAssignError("Owner email is required.");
+      return;
+    }
+
+    setAssignLoading(true);
+    setAssignError("");
+
+    try {
+      const res = await fetch(
+        `/api/admin/gyms/${gymId}/assign-owner`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: ownerEmail.trim(),
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(
+          data.error || "Failed to assign gym owner."
+        );
+      }
+
+      setGyms((current) =>
+        current.map((g) =>
+          g._id === gymId
+            ? {
+                ...g,
+                ownerId: data.gym.ownerId,
+                ownerEmail: data.owner.email,
+              }
+            : g
+        )
+      );
+
+      setAssigningId(null);
+      setOwnerEmail("");
+      setAssignError("");
+    } catch (err) {
+      setAssignError(
+        err.message || "Failed to assign gym owner."
+      );
+    } finally {
+      setAssignLoading(false);
     }
   };
 
   return (
     <div>
+      {/* Add Gym */}
       <button
         onClick={openCreateForm}
         className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-800 transition-colors mb-6"
@@ -119,15 +230,24 @@ export default function GymsManager({ initialGyms }) {
         Add Gym
       </button>
 
+      {/* Add / Edit Gym Modal */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowForm(false)} />
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowForm(false)}
+          />
+
           <div className="relative bg-white rounded-2xl w-full max-w-lg p-6 shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-semibold text-black">
                 {editingId ? "Edit Gym" : "Add New Gym"}
               </h3>
-              <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-black">
+
+              <button
+                onClick={() => setShowForm(false)}
+                className="text-gray-400 hover:text-black transition-colors"
+              >
                 <X size={20} />
               </button>
             </div>
@@ -138,12 +258,48 @@ export default function GymsManager({ initialGyms }) {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <FormField label="Gym Name" name="name" value={form.name} onChange={handleChange} required />
-              <FormField label="Location (City)" name="location" value={form.location} onChange={handleChange} required />
-              <FormField label="Full Address" name="address" value={form.address} onChange={handleChange} />
-              <FormField label="Image URL" name="image" value={form.image} onChange={handleChange} placeholder="https://..." />
-              <FormField label="Phone" name="phone" value={form.phone} onChange={handleChange} />
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-4"
+            >
+              <FormField
+                label="Gym Name"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                required
+              />
+
+              <FormField
+                label="Location (City)"
+                name="location"
+                value={form.location}
+                onChange={handleChange}
+                required
+              />
+
+              <FormField
+                label="Full Address"
+                name="address"
+                value={form.address}
+                onChange={handleChange}
+              />
+
+              <FormField
+                label="Image URL"
+                name="image"
+                value={form.image}
+                onChange={handleChange}
+                placeholder="https://..."
+              />
+
+              <FormField
+                label="Phone"
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+              />
+
               <FormField
                 label="Amenities (comma-separated)"
                 name="amenitiesInput"
@@ -153,7 +309,10 @@ export default function GymsManager({ initialGyms }) {
               />
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Description
+                </label>
+
                 <textarea
                   name="description"
                   rows={4}
@@ -168,49 +327,157 @@ export default function GymsManager({ initialGyms }) {
                 disabled={saving}
                 className="w-full py-3 rounded-lg bg-black text-white font-medium hover:bg-gray-800 transition-colors disabled:opacity-60"
               >
-                {saving ? "Saving..." : editingId ? "Save Changes" : "Create Gym"}
+                {saving
+                  ? "Saving..."
+                  : editingId
+                  ? "Save Changes"
+                  : "Create Gym"}
               </button>
             </form>
           </div>
         </div>
       )}
 
+      {/* No Gyms */}
       {gyms.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center text-gray-500 text-sm">
           No gyms added yet.
         </div>
       ) : (
+        /* Gym Cards */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {gyms.map((gym) => (
-            <div key={gym._id} className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+            <div
+              key={gym._id}
+              className="bg-white rounded-2xl border border-gray-200 overflow-hidden"
+            >
+              {/* Gym Image */}
               <div className="h-36 bg-gray-100">
                 {gym.image ? (
-                  <img src={gym.image} alt={gym.name} className="h-full w-full object-cover" />
+                  <img
+                    src={gym.image}
+                    alt={gym.name}
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center text-gray-300 text-3xl font-bold">
                     {gym.name?.charAt(0)}
                   </div>
                 )}
               </div>
+
+              {/* Gym Info */}
               <div className="p-4">
-                <p className="font-semibold text-black">{gym.name}</p>
-                <p className="text-xs text-gray-500 flex items-center gap-1 mt-1 mb-3">
-                  <MapPin size={12} /> {gym.location}
+                <p className="font-semibold text-black">
+                  {gym.name}
                 </p>
-                <div className="flex gap-2">
+
+                <p className="text-xs text-gray-500 flex items-center gap-1 mt-1 mb-3">
+                  <MapPin size={12} />
+                  {gym.location}
+                </p>
+
+                {/* Edit / Delete */}
+                <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => openEditForm(gym)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-medium hover:border-black transition-colors"
                   >
-                    <Edit2 size={12} /> Edit
+                    <Edit2 size={12} />
+                    Edit
                   </button>
+
                   <button
                     onClick={() => handleDelete(gym._id)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 text-red-600 text-xs font-medium hover:bg-red-50 transition-colors"
                   >
-                    <Trash2 size={12} /> Delete
+                    <Trash2 size={12} />
+                    Delete
                   </button>
                 </div>
+
+                {/* Gym Owner */}
+                {gym.ownerId ? (
+                  <div className="mt-3 flex items-center gap-2 rounded-lg bg-gray-50 border border-gray-100 px-3 py-2">
+                    <UserPlus
+                      size={13}
+                      className="text-gray-400 shrink-0"
+                    />
+
+                    <div className="min-w-0">
+                      <p className="text-[10px] uppercase tracking-wide text-gray-400 font-medium">
+                        Owner
+                      </p>
+
+                      <p className="text-xs font-medium text-gray-700 truncate">
+                        {gym.ownerEmail || "Assigned"}
+                      </p>
+                    </div>
+                  </div>
+                ) : assigningId === gym._id ? (
+                  /* Assign Owner Form */
+                  <div className="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                    <p className="text-xs font-medium text-gray-700 mb-2">
+                      Assign Gym Owner
+                    </p>
+
+                    <input
+                      type="email"
+                      value={ownerEmail}
+                      onChange={(e) => {
+                        setOwnerEmail(e.target.value);
+                        setAssignError("");
+                      }}
+                      placeholder="owner@email.com"
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black"
+                    />
+
+                    {assignError && (
+                      <p className="text-xs text-red-600 mt-1.5">
+                        {assignError}
+                      </p>
+                    )}
+
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() =>
+                          handleAssignOwner(gym._id)
+                        }
+                        disabled={assignLoading}
+                        className="flex-1 text-xs font-medium px-3 py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition-colors disabled:opacity-60"
+                      >
+                        {assignLoading
+                          ? "Assigning..."
+                          : "Confirm"}
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setAssigningId(null);
+                          setOwnerEmail("");
+                          setAssignError("");
+                        }}
+                        disabled={assignLoading}
+                        className="px-3 py-2 rounded-lg border border-gray-200 bg-white text-xs font-medium hover:border-black transition-colors disabled:opacity-60"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  /* Assign Owner Button */
+                  <button
+                    onClick={() => {
+                      setAssigningId(gym._id);
+                      setOwnerEmail("");
+                      setAssignError("");
+                    }}
+                    className="mt-3 flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-black transition-colors"
+                  >
+                    <UserPlus size={13} />
+                    Assign Owner
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -220,10 +487,20 @@ export default function GymsManager({ initialGyms }) {
   );
 }
 
-function FormField({ label, name, value, onChange, placeholder = "", required = false }) {
+function FormField({
+  label,
+  name,
+  value,
+  onChange,
+  placeholder = "",
+  required = false,
+}) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
+      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+        {label}
+      </label>
+
       <input
         type="text"
         name={name}
