@@ -1,16 +1,24 @@
 import { NextResponse } from "next/server";
 import { listPublicTrainerProfiles } from "@/lib/models/trainerProfile";
+import { getDb } from "@/lib/db";
+import { ObjectId } from "mongodb";
 
 export async function GET() {
   const profiles = await listPublicTrainerProfiles();
 
-  // Shape each DB profile to match the same fields TrainerCard/[id] page expect
+  const db = await getDb();
+  const gymIds = [...new Set(profiles.map((p) => p.gymId).filter(Boolean))];
+  const gyms = gymIds.length > 0
+    ? await db.collection("gyms").find({ _id: { $in: gymIds.map((id) => new ObjectId(id)) } }).toArray()
+    : [];
+  const gymMap = new Map(gyms.map((g) => [g._id.toString(), g.name]));
+
   const trainers = profiles.map((p) => ({
-    id: p.userId,           // string (Mongo ObjectId), distinct from static mock numeric ids
+    id: p.userId,
     name: p.name,
     email: p.email,
     photo: p.photo || "",
-    rating: 5.0,             // placeholder until a real review system exists
+    rating: 5.0,
     category: p.category || "",
     specialization: p.specialization,
     experience: p.experience,
@@ -22,7 +30,9 @@ export async function GET() {
     availability: p.availability,
     certification: p.certification,
     phone: p.phone,
-    isDbTrainer: true,       // flag so the [id] page knows to look in DB, not mock data
+    gymId: p.gymId || null,
+    gymName: p.gymId ? gymMap.get(p.gymId) || null : null,
+    isDbTrainer: true,
   }));
 
   return NextResponse.json({ trainers });

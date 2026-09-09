@@ -1,6 +1,7 @@
 import { auth } from "../../../auth";
 import { redirect } from "next/navigation";
 import { getTrainerProfile } from "@/lib/models/trainerProfile";
+import { getGymById } from "@/lib/models/gym";
 import ProfileView from "./ProfileView";
 
 export default async function TrainerProfilePage() {
@@ -12,25 +13,31 @@ export default async function TrainerProfilePage() {
 
   const existingProfile = await getTrainerProfile(session.user.id);
 
-const initialData = {
-  name: session.user.name || "",
-  email: session.user.email || "",
-  photo: existingProfile?.photo || "",
-  phone: existingProfile?.phone || "",
-  specialization: existingProfile?.specialization || "",
-  experience: existingProfile?.experience || "",
-  certification: existingProfile?.certification || "",
-  location: existingProfile?.location || "",
-  price: existingProfile?.price || "",
-  bio: existingProfile?.bio || "",
-  specialties: existingProfile?.specialties || [],
-  availability: existingProfile?.availability || "",
+  let gym = null;
+  if (existingProfile?.gymId) {
+    gym = await getGymById(existingProfile.gymId);
+  }
 
-  // Listing fields
-  isListed: existingProfile?.isListed || false,
-  listingStatus: existingProfile?.listingStatus || "draft",
-  listingAdminNote: existingProfile?.listingAdminNote || "",
-};
+  const initialData = {
+    name: session.user.name || "",
+    email: session.user.email || "",
+    photo: existingProfile?.photo || "",
+    phone: existingProfile?.phone || "",
+    specialization: existingProfile?.specialization || "",
+    category: existingProfile?.category || "",
+    experience: existingProfile?.experience || "",
+    certification: existingProfile?.certification || "",
+    location: existingProfile?.location || "",
+    price: existingProfile?.price || "",
+    bio: existingProfile?.bio || "",
+    specialties: existingProfile?.specialties || [],
+    availability: existingProfile?.availability || "",
+    isListed: existingProfile?.isListed || false,
+    listingStatus: existingProfile?.listingStatus || "draft",
+    listingAdminNote: existingProfile?.listingAdminNote || "",
+    gymId: existingProfile?.gymId || "",
+    gymName: gym?.name || null,
+  };
 
   return (
     <div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Star, MapPin, Clock, CheckCircle2, BadgeCheck, Pencil, Globe, EyeOff } from "lucide-react";
+import { Star, MapPin, Clock, CheckCircle2, BadgeCheck, Pencil, Globe, EyeOff, Building2 } from "lucide-react";
 import ProfileEditForm from "./ProfileEditForm";
 
 export default function ProfileView({ initialData }) {
@@ -109,6 +109,12 @@ export default function ProfileView({ initialData }) {
                   <Clock size={16} />
                   {data.experience || "Not set"}
                 </div>
+                {data.gymName && (
+                  <div className="flex items-center gap-1.5">
+                    <Building2 size={16} />
+                    {data.gymName}
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -34,6 +34,7 @@ export async function PATCH(request) {
       bio,
       specialties,
       availability,
+      gymId,
     } = body;
 
     const updated = await upsertTrainerProfile(session.user.id, {
@@ -50,6 +51,7 @@ export async function PATCH(request) {
       bio,
       specialties,
       availability,
+      gymId,
     });
 
     return NextResponse.json({ profile: updated });

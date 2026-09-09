@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { User, Mail, Phone, MapPin, Award, Briefcase, IndianRupee, ImageIcon, Clock, Save, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, Mail, Phone, MapPin, Award, Briefcase, IndianRupee, ImageIcon, Clock, Save, X, Building2 } from "lucide-react";
 
 const categories = [
   { label: "Select a category", value: "" },
@@ -16,8 +16,16 @@ export default function ProfileEditForm({ initialData, onCancel, onSaved }) {
     ...initialData,
     specialtiesInput: initialData.specialties?.join(", ") || "",
   });
+  const [gyms, setGyms] = useState([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch("/api/gyms/public")
+      .then((res) => res.json())
+      .then((data) => setGyms(data.gyms || []))
+      .catch(() => setGyms([]));
+  }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -45,6 +53,7 @@ export default function ProfileEditForm({ initialData, onCancel, onSaved }) {
       bio: form.bio,
       specialties,
       availability: form.availability,
+      gymId: form.gymId,
     };
 
     try {
@@ -97,6 +106,26 @@ export default function ProfileEditForm({ initialData, onCancel, onSaved }) {
               </option>
             ))}
           </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Affiliated Gym (optional)</label>
+          <div className="relative">
+            <Building2 size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <select
+              name="gymId"
+              value={form.gymId || ""}
+              onChange={handleChange}
+              className="w-full pl-11 pr-4 py-2.5 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black transition-all bg-white"
+            >
+              <option value="">Not affiliated with a gym</option>
+              {gyms.map((gym) => (
+                <option key={gym._id} value={gym._id}>
+                  {gym.name} — {gym.location}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <Field label="Experience" name="experience" icon={Briefcase} value={form.experience} onChange={handleChange} placeholder="e.g. 5 years" />

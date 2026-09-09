@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Star } from "lucide-react";
+import { Star, Building2 } from "lucide-react";
 
 export default function TrainerCard({ trainer }) {
   return (
@@ -24,6 +24,13 @@ export default function TrainerCard({ trainer }) {
         <p className="text-sm text-gray-500 mb-1">
           {trainer.specialization} • {trainer.experience}
         </p>
+
+        {trainer.gymName && (
+          <p className="flex items-center gap-1 text-xs text-gray-500 mb-2">
+            <Building2 size={12} />
+            {trainer.gymName}
+          </p>
+        )}
 
         <p className="text-sm text-gray-600 mb-4 line-clamp-2">
           {trainer.description}

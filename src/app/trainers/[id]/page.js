@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, MapPin, Clock, CheckCircle2, BadgeCheck } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, CheckCircle2, BadgeCheck, Building2 } from "lucide-react";
 import { trainers } from "@/data/trainers";
 import { getTrainerProfile } from "@/lib/models/trainerProfile";
 import { getTrainerRatingSummary } from "@/lib/models/review";
 import { getReviewableBooking } from "@/lib/models/booking";
+import { getGymById } from "@/lib/models/gym";
 import { auth } from "@/auth";
 import BookingModal from "@/components/trainers/BookingModal";
 import RateTrainerSection from "@/components/trainers/RateTrainerSection";
@@ -22,6 +23,11 @@ async function getTrainer(id) {
 
   const ratingSummary = await getTrainerRatingSummary(id);
 
+  let gym = null;
+  if (profile.gymId) {
+    gym = await getGymById(profile.gymId);
+  }
+
   return {
     id: profile.userId,
     name: profile.name,
@@ -35,6 +41,8 @@ async function getTrainer(id) {
     bio: profile.bio,
     specialties: profile.specialties || [],
     availability: profile.availability,
+    gymId: profile.gymId || null,
+    gymName: gym?.name || null,
   };
 }
 
@@ -46,9 +54,9 @@ export default async function TrainerProfilePage({ params }) {
 
   const session = await auth();
 
-  // Only check reviewability for real DB trainers, and only if logged in as a different user
+  const isMockTrainer = !Number.isNaN(Number(id));
   let reviewableBooking = null;
-  if (session?.user && session.user.id !== String(trainer.id) && !Number.isNaN(Number(id)) === false) {
+  if (session?.user && !isMockTrainer && session.user.id !== String(trainer.id)) {
     reviewableBooking = await getReviewableBooking(session.user.id, String(trainer.id));
   }
 
@@ -105,6 +113,15 @@ export default async function TrainerProfilePage({ params }) {
                     <Clock size={16} />
                     {trainer.experience}
                   </div>
+                  {trainer.gymName && (
+                    <Link
+                      href={`/gyms/${trainer.gymId}`}
+                      className="flex items-center gap-1.5 hover:text-black transition-colors underline decoration-dotted"
+                    >
+                      <Building2 size={16} />
+                      {trainer.gymName}
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>

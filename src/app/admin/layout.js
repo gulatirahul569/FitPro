@@ -11,6 +11,7 @@ import {
   User,
   Calendar,
   CreditCard,
+  Building2,
   Settings,
   ClipboardCheck,
   ArrowLeft,
@@ -40,6 +41,7 @@ const navItems = [
     label: "Trainers",
     icon: Dumbbell,
   },
+  { href: "/admin/gyms", label: "Gyms", icon: Building2 },
   {
     href: "/admin/applications",
     label: "Applications",
