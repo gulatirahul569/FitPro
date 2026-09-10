@@ -36,6 +36,7 @@ export default async function TrainerProfilePage() {
     listingStatus: existingProfile?.listingStatus || "draft",
     listingAdminNote: existingProfile?.listingAdminNote || "",
     gymId: existingProfile?.gymId || "",
+    gymStatus: existingProfile?.gymStatus || null,
     gymName: gym?.name || null,
   };
 

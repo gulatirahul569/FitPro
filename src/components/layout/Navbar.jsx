@@ -15,6 +15,7 @@ import {
   LogOut,
   LayoutDashboard,
   ShieldCheck,
+  Building2,
   ChevronDown,
 } from "lucide-react";
 
@@ -46,18 +47,21 @@ export default function Navbar() {
   const isNormalUser = role === "user";
   const isTrainer = role === "trainer";
   const isAdmin = role === "admin";
+  const isGymOwner = role === "gym-owner";
 
   // Dashboard routes
   const isDashboard =
     pathname.startsWith("/user/") ||
     pathname.startsWith("/trainer/") ||
-    pathname.startsWith("/admin/");
+    pathname.startsWith("/admin/") ||
+    pathname.startsWith("/gym-owner/");
 
   // Become a Trainer:
   // Logged out -> SHOW
   // User       -> SHOW
   // Trainer    -> HIDE
   // Admin      -> HIDE
+  // Gym Owner  -> HIDE
   const showBecomeTrainer = !isLoggedIn || isNormalUser;
 
   const handleLogout = async () => {
@@ -269,6 +273,40 @@ export default function Navbar() {
 
                             <ProfileMenuItem
                               href="/trainer/settings"
+                              icon={Settings}
+                              label="Settings"
+                              onClick={() => setProfileMenu(false)}
+                            />
+                          </>
+                        )}
+
+                        {/* ================= GYM OWNER ================= */}
+
+                        {isGymOwner && (
+                          <>
+                            <ProfileMenuItem
+                              href="/gym-owner/dashboard"
+                              icon={Building2}
+                              label="Gym Owner Dashboard"
+                              onClick={() => setProfileMenu(false)}
+                            />
+
+                            <ProfileMenuItem
+                              href="/gym-owner/profile"
+                              icon={Building2}
+                              label="Gym Profile"
+                              onClick={() => setProfileMenu(false)}
+                            />
+
+                            <ProfileMenuItem
+                              href="/gym-owner/trainers"
+                              icon={Calendar}
+                              label="Trainer Requests"
+                              onClick={() => setProfileMenu(false)}
+                            />
+
+                            <ProfileMenuItem
+                              href="/gym-owner/settings"
                               icon={Settings}
                               label="Settings"
                               onClick={() => setProfileMenu(false)}
@@ -517,6 +555,42 @@ export default function Navbar() {
 
                   <ProfileMenuItem
                     href="/trainer/settings"
+                    icon={Settings}
+                    label="Settings"
+                    onClick={() => setMobileMenu(false)}
+                  />
+                </>
+              )}
+
+              {/* =================================================
+                  GYM OWNER
+              ================================================== */}
+
+              {isGymOwner && (
+                <>
+                  <ProfileMenuItem
+                    href="/gym-owner/dashboard"
+                    icon={Building2}
+                    label="Gym Owner Dashboard"
+                    onClick={() => setMobileMenu(false)}
+                  />
+
+                  <ProfileMenuItem
+                    href="/gym-owner/profile"
+                    icon={Building2}
+                    label="Gym Profile"
+                    onClick={() => setMobileMenu(false)}
+                  />
+
+                  <ProfileMenuItem
+                    href="/gym-owner/trainers"
+                    icon={Calendar}
+                    label="Trainer Requests"
+                    onClick={() => setMobileMenu(false)}
+                  />
+
+                  <ProfileMenuItem
+                    href="/gym-owner/settings"
                     icon={Settings}
                     label="Settings"
                     onClick={() => setMobileMenu(false)}

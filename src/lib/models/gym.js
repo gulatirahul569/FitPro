@@ -11,6 +11,7 @@ import { ObjectId } from "mongodb";
 //   image: string,
 //   amenities: string[],
 //   phone: string,
+//   ownerId: string | null,
 //   createdAt: Date,
 //   updatedAt: Date,
 // }
@@ -58,14 +59,6 @@ export async function deleteGym(id) {
   return result.deletedCount > 0;
 }
 
-export async function getTrainersByGymId(gymId) {
-  const db = await getDb();
-  return db
-    .collection("trainerProfiles")
-    .find({ gymId, isListed: true })
-    .toArray();
-}
-
 export async function assignGymOwner(gymId, ownerId) {
   const db = await getDb();
 
@@ -81,4 +74,45 @@ export async function assignGymOwner(gymId, ownerId) {
 export async function getGymByOwnerId(ownerId) {
   const db = await getDb();
   return db.collection("gyms").findOne({ ownerId });
+}
+
+// Only returns trainers who are both publicly listed AND approved by this
+// specific gym — used on the public /gyms/[id] page
+export async function getTrainersByGymId(gymId) {
+  const db = await getDb();
+  return db
+    .collection("trainerProfiles")
+    .find({ gymId, isListed: true, gymStatus: "approved" })
+    .toArray();
+}
+
+export async function getPendingTrainersForGym(gymId) {
+  const db = await getDb();
+  return db
+    .collection("trainerProfiles")
+    .find({ gymId, gymStatus: "pending" })
+    .toArray();
+}
+
+export async function getApprovedTrainersForGym(gymId) {
+  const db = await getDb();
+  return db
+    .collection("trainerProfiles")
+    .find({ gymId, gymStatus: "approved" })
+    .toArray();
+}
+
+export async function reviewGymTrainerRequest(userId, gymId, decision) {
+  const db = await getDb();
+
+  // Scoped by both userId AND gymId AND current status="pending" — a gym
+  // owner literally cannot approve/reject a trainer for a DIFFERENT gym,
+  // even if they guessed a valid userId
+  const result = await db.collection("trainerProfiles").findOneAndUpdate(
+    { userId, gymId, gymStatus: "pending" },
+    { $set: { gymStatus: decision, updatedAt: new Date() } },
+    { returnDocument: "after" }
+  );
+
+  return result;
 }

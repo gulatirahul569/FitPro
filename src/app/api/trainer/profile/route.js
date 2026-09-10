@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "../../../../auth";
+import { auth } from "@/auth";
 import { getTrainerProfile, upsertTrainerProfile } from "@/lib/models/trainerProfile";
 
 export async function GET() {
@@ -37,9 +37,14 @@ export async function PATCH(request) {
       gymId,
     } = body;
 
-    const updated = await upsertTrainerProfile(session.user.id, {
-      name: session.user.name,   // always from session, never from client body
-      email: session.user.email, // same
+    // Check if the gym selection actually changed, so we don't reset status
+    // every time they save the form without touching the gym field
+    const existingProfile = await getTrainerProfile(session.user.id);
+    const gymChanged = (gymId || "") !== (existingProfile?.gymId || "");
+
+    const updateData = {
+      name: session.user.name,
+      email: session.user.email,
       photo,
       phone,
       specialization,
@@ -51,8 +56,15 @@ export async function PATCH(request) {
       bio,
       specialties,
       availability,
-      gymId,
-    });
+      gymId: gymId || null,
+    };
+
+    if (gymChanged) {
+      // New gym selected (or cleared) -> reset approval status
+      updateData.gymStatus = gymId ? "pending" : null;
+    }
+
+    const updated = await upsertTrainerProfile(session.user.id, updateData);
 
     return NextResponse.json({ profile: updated });
   } catch (error) {

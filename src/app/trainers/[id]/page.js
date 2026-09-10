@@ -24,7 +24,7 @@ async function getTrainer(id) {
   const ratingSummary = await getTrainerRatingSummary(id);
 
   let gym = null;
-  if (profile.gymId) {
+  if (profile.gymId && profile.gymStatus === "approved") {
     gym = await getGymById(profile.gymId);
   }
 
@@ -41,7 +41,7 @@ async function getTrainer(id) {
     bio: profile.bio,
     specialties: profile.specialties || [],
     availability: profile.availability,
-    gymId: profile.gymId || null,
+    gymId: profile.gymStatus === "approved" ? profile.gymId : null,
     gymName: gym?.name || null,
   };
 }

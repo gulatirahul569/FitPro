@@ -7,9 +7,15 @@ export async function GET() {
   const profiles = await listPublicTrainerProfiles();
 
   const db = await getDb();
-  const gymIds = [...new Set(profiles.map((p) => p.gymId).filter(Boolean))];
-  const gyms = gymIds.length > 0
-    ? await db.collection("gyms").find({ _id: { $in: gymIds.map((id) => new ObjectId(id)) } }).toArray()
+  const approvedGymIds = [
+    ...new Set(
+      profiles
+        .filter((p) => p.gymId && p.gymStatus === "approved")
+        .map((p) => p.gymId)
+    ),
+  ];
+  const gyms = approvedGymIds.length > 0
+    ? await db.collection("gyms").find({ _id: { $in: approvedGymIds.map((id) => new ObjectId(id)) } }).toArray()
     : [];
   const gymMap = new Map(gyms.map((g) => [g._id.toString(), g.name]));
 
@@ -30,8 +36,9 @@ export async function GET() {
     availability: p.availability,
     certification: p.certification,
     phone: p.phone,
-    gymId: p.gymId || null,
-    gymName: p.gymId ? gymMap.get(p.gymId) || null : null,
+    // Only expose gym affiliation once approved by that gym's owner
+    gymId: p.gymStatus === "approved" ? p.gymId : null,
+    gymName: p.gymStatus === "approved" ? gymMap.get(p.gymId) || null : null,
     isDbTrainer: true,
   }));
 

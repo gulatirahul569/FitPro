@@ -10,6 +10,31 @@ export default function ProfileView({ initialData }) {
   const [listingLoading, setListingLoading] = useState(false);
   const [listingError, setListingError] = useState("");
 
+  const [reapplyLoading, setReapplyLoading] = useState(false);
+
+const handleReapplyToGym = async () => {
+  setReapplyLoading(true);
+
+  try {
+    const res = await fetch("/api/trainer/profile/reapply-gym", {
+      method: "POST",
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      alert(result.error || "Something went wrong.");
+      return;
+    }
+
+    setData({ ...data, gymStatus: result.profile.gymStatus });
+  } catch (err) {
+    alert("Something went wrong. Please try again.");
+  } finally {
+    setReapplyLoading(false);
+  }
+};
+
   const hasProfileData = data.specialization || data.bio;
 
   const handleToggleListing = async () => {
@@ -110,9 +135,28 @@ export default function ProfileView({ initialData }) {
                   {data.experience || "Not set"}
                 </div>
                 {data.gymName && (
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     <Building2 size={16} />
                     {data.gymName}
+                    {data.gymStatus === "pending" && (
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700">
+                        Pending approval
+                      </span>
+                    )}
+                    {data.gymStatus === "rejected" && (
+                      <>
+                        <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-red-50 text-red-700">
+                          Rejected
+                        </span>
+                        <button
+                          onClick={handleReapplyToGym}
+                          disabled={reapplyLoading}
+                          className="text-xs font-medium text-black underline hover:no-underline disabled:opacity-60"
+                        >
+                          {reapplyLoading ? "Sending..." : "Reapply"}
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -197,20 +241,19 @@ export default function ProfileView({ initialData }) {
               <button
                 onClick={handleToggleListing}
                 disabled={listingLoading}
-                className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors mb-3 disabled:opacity-60 ${
-                  data.isListed
-                    ? "border border-gray-300 text-gray-700 hover:border-gray-400"
-                    : "bg-green-600 text-white hover:bg-green-700"
-                }`}
+                className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors mb-3 disabled:opacity-60 ${data.isListed
+                  ? "border border-gray-300 text-gray-700 hover:border-gray-400"
+                  : "bg-green-600 text-white hover:bg-green-700"
+                  }`}
               >
                 {data.isListed ? <EyeOff size={16} /> : <Globe size={16} />}
                 {listingLoading
                   ? "Updating..."
                   : data.isListed
-                  ? "Unlist from Trainers Page"
-                  : data.listingStatus === "approved"
-                  ? "Go Live"
-                  : "Request to Go Live"}
+                    ? "Unlist from Trainers Page"
+                    : data.listingStatus === "approved"
+                      ? "Go Live"
+                      : "Request to Go Live"}
               </button>
             )}
 
@@ -219,6 +262,8 @@ export default function ProfileView({ initialData }) {
                 Admin note: "{data.listingAdminNote}"
               </p>
             )}
+
+
 
             {listingError && (
               <p className="text-xs text-red-600 text-center mb-3">{listingError}</p>

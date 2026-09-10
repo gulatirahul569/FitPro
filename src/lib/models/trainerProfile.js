@@ -218,3 +218,14 @@ export async function countPendingListingRequests() {
   const db = await getDb();
   return db.collection("trainerProfiles").countDocuments({ listingStatus: "pending" });
 }
+export async function reapplyToGym(userId) {
+  const db = await getDb();
+
+  const result = await db.collection("trainerProfiles").findOneAndUpdate(
+    { userId, gymStatus: "rejected" }, // only actionable if currently rejected
+    { $set: { gymStatus: "pending", updatedAt: new Date() } },
+    { returnDocument: "after" }
+  );
+
+  return result;
+}

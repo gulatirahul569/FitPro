@@ -11,7 +11,7 @@ export default async function GymsPage() {
   const trainerCounts = await db
     .collection("trainerProfiles")
     .aggregate([
-      { $match: { isListed: true, gymId: { $ne: null } } },
+      { $match: { isListed: true, gymId: { $ne: null }, gymStatus: "approved" } },
       { $group: { _id: "$gymId", count: { $sum: 1 } } },
     ])
     .toArray();
