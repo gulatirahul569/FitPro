@@ -1,11 +1,36 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Play, Star, Eye, Clock } from "lucide-react";
-import { videos } from "@/data/videos";
+import { videos as mockVideos } from "@/data/videos";
+import { getApprovedVideoById } from "@/lib/models/video";
+
+async function getVideo(id) {
+  const numericId = Number(id);
+
+  if (!Number.isNaN(numericId)) {
+    return mockVideos.find((v) => v.id === numericId) || null;
+  }
+
+  const video = await getApprovedVideoById(id);
+  if (!video) return null;
+
+  return {
+    id: video._id.toString(),
+    title: video.title,
+    trainer: video.trainerName,
+    trainerId: video.trainerId,
+    thumbnail: video.thumbnail,
+    videoUrl: video.videoUrl,
+    description: video.description,
+    rating: 5.0,
+    duration: "—",
+    views: "New",
+  };
+}
 
 export default async function VideoDetailPage({ params }) {
   const { id } = await params;
-  const video = videos.find((v) => v.id === Number(id));
+  const video = await getVideo(id);
 
   if (!video) return notFound();
 
@@ -20,13 +45,14 @@ export default async function VideoDetailPage({ params }) {
           Back to Videos
         </Link>
 
-        {/* Video player placeholder */}
         <div className="relative h-64 md:h-96 w-full rounded-2xl overflow-hidden bg-black mb-6">
-          <img
-            src={video.thumbnail}
-            alt={video.title}
-            className="h-full w-full object-cover opacity-70"
-          />
+          {video.thumbnail ? (
+            <img
+              src={video.thumbnail}
+              alt={video.title}
+              className="h-full w-full object-cover opacity-70"
+            />
+          ) : null}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
               <Play size={28} className="text-black ml-1" fill="black" />
@@ -34,9 +60,7 @@ export default async function VideoDetailPage({ params }) {
           </div>
         </div>
 
-        <h1 className="text-2xl md:text-3xl font-bold text-black mb-3">
-          {video.title}
-        </h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-black mb-3">{video.title}</h1>
 
         <div className="flex flex-wrap items-center gap-5 text-sm text-gray-500 mb-6">
           <div className="flex items-center gap-1.5">
@@ -47,24 +71,28 @@ export default async function VideoDetailPage({ params }) {
             <Eye size={16} />
             {video.views} views
           </div>
-          <div className="flex items-center gap-1.5">
-            <Clock size={16} />
-            {video.duration}
-          </div>
+          {video.duration && video.duration !== "—" && (
+            <div className="flex items-center gap-1.5">
+              <Clock size={16} />
+              {video.duration}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-3 mb-8 pb-8 border-b border-gray-100">
           <div className="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center font-semibold text-black">
-            {video.trainer.charAt(0)}
+            {video.trainer?.charAt(0)}
           </div>
           <div>
             <p className="font-medium text-black">{video.trainer}</p>
-            <Link
-              href={`/trainers/${video.trainerId}`}
-              className="text-sm text-gray-500 hover:text-black transition-colors"
-            >
-              View trainer profile →
-            </Link>
+            {video.trainerId && (
+              <Link
+                href={`/trainers/${video.trainerId}`}
+                className="text-sm text-gray-500 hover:text-black transition-colors"
+              >
+                View trainer profile →
+              </Link>
+            )}
           </div>
         </div>
 

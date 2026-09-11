@@ -131,3 +131,16 @@ export async function getReviewableBooking(userId, trainerId) {
   const unreviewed = bookings.find((b) => !reviewedSet.has(b._id.toString()));
   return unreviewed || null;
 }
+
+export async function hasUnlockedTrainerVideos(userId, trainerId) {
+  const db = await getDb();
+
+  const booking = await db.collection("bookings").findOne({
+    userId,
+    trainerId,
+    type: "session", // must be a PAID session, not a free demo booking
+    status: { $in: ["confirmed", "completed"] },
+  });
+
+  return !!booking;
+}

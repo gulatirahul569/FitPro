@@ -10,6 +10,9 @@ import { auth } from "@/auth";
 import BookingModal from "@/components/trainers/BookingModal";
 import RateTrainerSection from "@/components/trainers/RateTrainerSection";
 import StarRating from "@/components/ui/StarRating";
+import { getVideosByTrainer } from "@/lib/models/video";
+import { hasUnlockedTrainerVideos } from "@/lib/models/booking";
+import VideoSection from "@/components/trainers/VideoSection";
 
 async function getTrainer(id) {
   const numericId = Number(id);
@@ -53,11 +56,25 @@ export default async function TrainerProfilePage({ params }) {
   if (!trainer) return notFound();
 
   const session = await auth();
-
   const isMockTrainer = !Number.isNaN(Number(id));
+
   let reviewableBooking = null;
   if (session?.user && !isMockTrainer && session.user.id !== String(trainer.id)) {
     reviewableBooking = await getReviewableBooking(session.user.id, String(trainer.id));
+  }
+
+  let trainerVideos = [];
+  let hasUnlocked = false;
+
+  if (!isMockTrainer) {
+    const allVideos = await getVideosByTrainer(String(trainer.id));
+    trainerVideos = allVideos
+      .filter((v) => v.status === "approved")
+      .map((v) => ({ ...v, _id: v._id.toString() }));
+
+    if (session?.user) {
+      hasUnlocked = await hasUnlockedTrainerVideos(session.user.id, String(trainer.id));
+    }
   }
 
   return (
@@ -146,6 +163,10 @@ export default async function TrainerProfilePage({ params }) {
                   ))}
                 </div>
               </div>
+            )}
+
+            {trainerVideos.length > 0 && (
+              <VideoSection videos={trainerVideos} hasUnlocked={hasUnlocked} />
             )}
 
             <div>
