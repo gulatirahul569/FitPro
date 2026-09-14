@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Play, Star, Eye, Clock } from "lucide-react";
+import { ArrowLeft, Star, Eye, Clock } from "lucide-react";
 import { videos as mockVideos } from "@/data/videos";
 import { getApprovedVideoById } from "@/lib/models/video";
+import VideoPlayer from "./VideoPlayer";
 
 async function getVideo(id) {
   const numericId = Number(id);
@@ -45,20 +46,12 @@ export default async function VideoDetailPage({ params }) {
           Back to Videos
         </Link>
 
-        <div className="relative h-64 md:h-96 w-full rounded-2xl overflow-hidden bg-black mb-6">
-          {video.thumbnail ? (
-            <img
-              src={video.thumbnail}
-              alt={video.title}
-              className="h-full w-full object-cover opacity-70"
-            />
-          ) : null}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-16 h-16 rounded-full bg-white/90 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform">
-              <Play size={28} className="text-black ml-1" fill="black" />
-            </div>
-          </div>
-        </div>
+        <VideoPlayer
+          videoUrl={video.videoUrl}
+          thumbnail={video.thumbnail}
+          title={video.title}
+          isPlayable={!!video.videoUrl}
+        />
 
         <h1 className="text-2xl md:text-3xl font-bold text-black mb-3">{video.title}</h1>
 

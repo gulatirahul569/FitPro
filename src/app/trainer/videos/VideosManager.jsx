@@ -1,14 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, X, Trash2, Play, Star, Lock } from "lucide-react";
+import { upload } from "@vercel/blob/client";
+import { Plus, X, Trash2, Play, Star, Lock, Upload as UploadIcon } from "lucide-react";
 
-const emptyForm = { title: "", description: "", videoUrl: "", thumbnail: "" };
+const emptyForm = { title: "", description: "" };
 
 export default function VideosManager({ initialVideos }) {
   const [videos, setVideos] = useState(initialVideos);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [videoFile, setVideoFile] = useState(null);
+  const [thumbnailFile, setThumbnailFile] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -18,14 +22,47 @@ export default function VideosManager({ initialVideos }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!videoFile) {
+      setError("Please select a video file.");
+      return;
+    }
+
     setSaving(true);
     setError("");
+    setUploadProgress(0);
 
     try {
+      // Upload the video file directly to Blob storage from the browser
+      const videoBlob = await upload(videoFile.name, videoFile, {
+        access: "public",
+        handleUploadUrl: "/api/trainer/videos/upload",
+        onUploadProgress: (progress) => {
+          setUploadProgress(Math.round(progress.percentage));
+        },
+      });
+
+      // Optionally upload a thumbnail image too
+      let thumbnailUrl = "";
+      if (thumbnailFile) {
+        const thumbBlob = await upload(thumbnailFile.name, thumbnailFile, {
+          access: "public",
+          handleUploadUrl: "/api/trainer/videos/upload",
+        });
+        thumbnailUrl = thumbBlob.url;
+      }
+
+      // Now create the video record with the real hosted URLs
       const res = await fetch("/api/trainer/videos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, isDemo: !hasDemo }),
+        body: JSON.stringify({
+          title: form.title,
+          description: form.description,
+          videoUrl: videoBlob.url,
+          thumbnail: thumbnailUrl,
+          isDemo: !hasDemo,
+        }),
       });
 
       const data = await res.json();
@@ -33,11 +70,14 @@ export default function VideosManager({ initialVideos }) {
 
       setVideos((current) => [{ ...data.video, _id: data.video._id.toString() }, ...current]);
       setForm(emptyForm);
+      setVideoFile(null);
+      setThumbnailFile(null);
       setShowForm(false);
     } catch (err) {
-      setError(err.message || "Something went wrong.");
+      setError(err.message || "Upload failed. Please try again.");
     } finally {
       setSaving(false);
+      setUploadProgress(0);
     }
   };
 
@@ -50,9 +90,7 @@ export default function VideosManager({ initialVideos }) {
       });
       if (!res.ok) throw new Error("Failed");
 
-      setVideos((current) =>
-        current.map((v) => ({ ...v, isDemo: v._id === id }))
-      );
+      setVideos((current) => current.map((v) => ({ ...v, isDemo: v._id === id })));
     } catch (err) {
       alert("Failed to update demo video.");
     }
@@ -81,11 +119,15 @@ export default function VideosManager({ initialVideos }) {
 
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setShowForm(false)} />
+          <div className="absolute inset-0 bg-black/50" onClick={() => !saving && setShowForm(false)} />
           <div className="relative bg-white rounded-2xl w-full max-w-lg p-6 shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-semibold text-black">Upload Video</h3>
-              <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-black">
+              <button
+                onClick={() => !saving && setShowForm(false)}
+                className="text-gray-400 hover:text-black disabled:opacity-40"
+                disabled={saving}
+              >
                 <X size={20} />
               </button>
             </div>
@@ -98,21 +140,37 @@ export default function VideosManager({ initialVideos }) {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <FormField label="Title" name="title" value={form.title} onChange={handleChange} required />
-              <FormField
-                label="Video URL"
-                name="videoUrl"
-                value={form.videoUrl}
-                onChange={handleChange}
-                placeholder="https://... (YouTube embed, Vimeo, or direct link)"
-                required
-              />
-              <FormField
-                label="Thumbnail URL"
-                name="thumbnail"
-                value={form.thumbnail}
-                onChange={handleChange}
-                placeholder="https://..."
-              />
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Video File</label>
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="video/mp4,video/webm,video/quicktime"
+                    onChange={(e) => setVideoFile(e.target.files?.[0] || null)}
+                    required
+                    className="w-full px-4 py-2.5 rounded-lg border border-gray-200 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-gray-100 file:text-sm file:font-medium hover:file:bg-gray-200 file:cursor-pointer"
+                  />
+                </div>
+                {videoFile && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    {videoFile.name} ({(videoFile.size / (1024 * 1024)).toFixed(1)} MB)
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  Thumbnail Image (optional)
+                </label>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={(e) => setThumbnailFile(e.target.files?.[0] || null)}
+                  className="w-full px-4 py-2.5 rounded-lg border border-gray-200 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-gray-100 file:text-sm file:font-medium hover:file:bg-gray-200 file:cursor-pointer"
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
                 <textarea
@@ -134,11 +192,24 @@ export default function VideosManager({ initialVideos }) {
                 All uploads are reviewed by an admin before appearing publicly.
               </p>
 
+              {saving && uploadProgress > 0 && (
+                <div>
+                  <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="bg-black h-full transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Uploading... {uploadProgress}%</p>
+                </div>
+              )}
+
               <button
                 type="submit"
                 disabled={saving}
-                className="w-full py-3 rounded-lg bg-black text-white font-medium hover:bg-gray-800 transition-colors disabled:opacity-60"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-black text-white font-medium hover:bg-gray-800 transition-colors disabled:opacity-60"
               >
+                <UploadIcon size={16} />
                 {saving ? "Uploading..." : "Upload Video"}
               </button>
             </form>
