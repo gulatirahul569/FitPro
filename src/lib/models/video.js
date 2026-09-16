@@ -128,3 +128,40 @@ export async function getApprovedVideoById(id) {
   const db = await getDb();
   return db.collection("trainerVideos").findOne({ _id: new ObjectId(id), status: "approved" });
 }
+export async function getVideosGroupedByTrainer() {
+  const db = await getDb();
+  const videos = await db.collection("trainerVideos").find({}).sort({ createdAt: -1 }).toArray();
+
+  const grouped = new Map();
+
+  for (const video of videos) {
+    if (!grouped.has(video.trainerId)) {
+      grouped.set(video.trainerId, {
+        trainerId: video.trainerId,
+        trainerName: video.trainerName,
+        videos: [],
+      });
+    }
+    grouped.get(video.trainerId).videos.push(video);
+  }
+
+  const groups = Array.from(grouped.values());
+
+  // Enrich with profile photo/specialization for a proper trainer-card look
+  const trainerIds = groups.map((g) => g.trainerId);
+  const profiles = await db
+    .collection("trainerProfiles")
+    .find({ userId: { $in: trainerIds } })
+    .toArray();
+  const profileMap = new Map(profiles.map((p) => [p.userId, p]));
+
+  return groups.map((g) => {
+    const profile = profileMap.get(g.trainerId);
+    return {
+      ...g,
+      photo: profile?.photo || "",
+      specialization: profile?.specialization || "",
+      location: profile?.location || "",
+    };
+  });
+}

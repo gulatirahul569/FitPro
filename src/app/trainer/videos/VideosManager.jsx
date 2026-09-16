@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { upload } from "@vercel/blob/client";
 import { Plus, X, Trash2, Play, Star, Lock, Upload as UploadIcon } from "lucide-react";
 
 const emptyForm = { title: "", description: "" };
@@ -12,7 +11,6 @@ export default function VideosManager({ initialVideos }) {
   const [form, setForm] = useState(emptyForm);
   const [videoFile, setVideoFile] = useState(null);
   const [thumbnailFile, setThumbnailFile] = useState(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -30,26 +28,34 @@ export default function VideosManager({ initialVideos }) {
 
     setSaving(true);
     setError("");
-    setUploadProgress(0);
 
     try {
-      // Upload the video file directly to Blob storage from the browser
-      const videoBlob = await upload(videoFile.name, videoFile, {
-        access: "public",
-        handleUploadUrl: "/api/trainer/videos/upload",
-        onUploadProgress: (progress) => {
-          setUploadProgress(Math.round(progress.percentage));
-        },
-      });
+      // Upload video file through our server route, which forwards it to Blob
+      const videoRes = await fetch(
+        `/api/trainer/videos/upload?filename=${encodeURIComponent(videoFile.name)}`,
+        {
+          method: "POST",
+          body: videoFile,
+        }
+      );
+
+      if (!videoRes.ok) throw new Error("Video upload failed.");
+      const videoBlob = await videoRes.json();
 
       // Optionally upload a thumbnail image too
       let thumbnailUrl = "";
       if (thumbnailFile) {
-        const thumbBlob = await upload(thumbnailFile.name, thumbnailFile, {
-          access: "public",
-          handleUploadUrl: "/api/trainer/videos/upload",
-        });
-        thumbnailUrl = thumbBlob.url;
+        const thumbRes = await fetch(
+          `/api/trainer/videos/upload?filename=${encodeURIComponent(thumbnailFile.name)}`,
+          {
+            method: "POST",
+            body: thumbnailFile,
+          }
+        );
+        if (thumbRes.ok) {
+          const thumbBlob = await thumbRes.json();
+          thumbnailUrl = thumbBlob.url;
+        }
       }
 
       // Now create the video record with the real hosted URLs
@@ -77,7 +83,6 @@ export default function VideosManager({ initialVideos }) {
       setError(err.message || "Upload failed. Please try again.");
     } finally {
       setSaving(false);
-      setUploadProgress(0);
     }
   };
 
@@ -192,16 +197,10 @@ export default function VideosManager({ initialVideos }) {
                 All uploads are reviewed by an admin before appearing publicly.
               </p>
 
-              {saving && uploadProgress > 0 && (
-                <div>
-                  <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
-                    <div
-                      className="bg-black h-full transition-all duration-300"
-                      style={{ width: `${uploadProgress}%` }}
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">Uploading... {uploadProgress}%</p>
-                </div>
+              {saving && (
+                <p className="text-xs text-gray-500 text-center">
+                  Uploading — this may take a moment for larger files...
+                </p>
               )}
 
               <button
