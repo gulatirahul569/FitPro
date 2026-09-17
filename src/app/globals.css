@@ -9,11 +9,17 @@ body {
   background: #ffffff;
   color: #111111;
 }
+
+/* =========================
+   Existing animations
+========================= */
+
 @keyframes fadeUp {
   from {
     opacity: 0;
     transform: translateY(28px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -24,15 +30,18 @@ body {
   from {
     transform: scale(1);
   }
+
   to {
     transform: scale(1.08);
   }
 }
 
 @keyframes softBounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(6px);
   }
@@ -49,4 +58,78 @@ body {
 
 .animate-soft-bounce {
   animation: softBounce 2s ease-in-out infinite;
+}
+
+/* =========================
+   Video marquee animation
+========================= */
+
+@keyframes video-marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.video-marquee-wrap {
+  width: 100%;
+  overflow: hidden;
+  background: #f9fafb;
+}
+
+.video-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: video-marquee-scroll 36s linear infinite;
+  will-change: transform;
+}
+
+.video-marquee-group {
+  display: flex;
+  flex-shrink: 0;
+  gap: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.video-marquee-wrap:hover .video-marquee-track {
+  animation-play-state: paused;
+}
+
+@media (min-width: 768px) {
+  .video-marquee-group {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .video-marquee-track {
+    animation: none;
+  }
+}
+
+/* Pause scrolling when the user hovers over the cards */
+.video-marquee-wrap:hover .video-marquee-track {
+  animation-play-state: paused;
+}
+
+/* Accessibility: stop non-essential movement for users who request it */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .animate-fade-up,
+  .animate-kenburns,
+  .animate-soft-bounce,
+  .video-marquee-track {
+    animation: none !important;
+  }
+
+  .animate-fade-up {
+    opacity: 1;
+  }
 }

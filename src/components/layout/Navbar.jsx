@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import {
@@ -25,7 +25,6 @@ const navLinks = [
   { href: "/trainers", label: "Trainers" },
   { href: "/videos", label: "Videos" },
   { href: "/gyms", label: "Gyms" },
-  
 ];
 
 export default function Navbar() {
@@ -34,6 +33,7 @@ export default function Navbar() {
 
   const [mobileMenu, setMobileMenu] = useState(false);
   const [profileMenu, setProfileMenu] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const isLoggedIn = status === "authenticated";
   const user = session?.user;
@@ -64,6 +64,20 @@ export default function Navbar() {
   // Gym Owner  -> HIDE
   const showBecomeTrainer = !isLoggedIn || isNormalUser;
 
+  // ================= GLASS / TRANSPARENT NAVBAR LOGIC =================
+  // Only the homepage (which has the dark hero behind it) gets the
+  // fully see-through "glass" state, and only while at the very top.
+  // Everything else (other pages, or once you scroll past the hero)
+  // gets the frosted-glass fixed navbar instead.
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 40);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const isGlassTransparent = pathname === "/" && !isDashboard && !isScrolled;
+
   const handleLogout = async () => {
     setProfileMenu(false);
     setMobileMenu(false);
@@ -75,25 +89,45 @@ export default function Navbar() {
 
   return (
     <header
-      className={`${
-        isDashboard ? "relative" : "sticky top-0"
-      } z-50 border-b border-gray-200 bg-white/95 backdrop-blur`}
+      className={`z-50 transition-colors duration-300 ${
+        isDashboard
+          ? "relative border-b border-gray-200 bg-white"
+          : `fixed inset-x-0 top-0 ${
+              isGlassTransparent
+                ? "border-b border-white/10 bg-transparent"
+                : "border-b border-white/20 bg-white/70 backdrop-blur-xl shadow-sm shadow-black/5"
+            }`
+      }`}
     >
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
         {/* =====================================================
             LOGO
         ====================================================== */}
 
-        <Link
-          href="/"
-          className="group flex items-center gap-2"
-        >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-black text-white transition-transform duration-300 ease-out group-hover:rotate-12">
+        <Link href="/" className="group flex items-center gap-2">
+          <div
+            className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-300 ease-out group-hover:rotate-12 ${
+              isGlassTransparent
+                ? "border border-white/20 bg-white/10 text-white backdrop-blur-md"
+                : "bg-black text-white"
+            }`}
+          >
             <Dumbbell size={22} />
           </div>
 
-          <span className="text-2xl font-extrabold tracking-tight">
-            FIT<span className="text-gray-500">PRO</span>
+          <span
+            className={`text-2xl font-extrabold tracking-tight transition-colors duration-300 ${
+              isGlassTransparent ? "text-white" : "text-black"
+            }`}
+          >
+            FIT
+            <span
+              className={
+                isGlassTransparent ? "text-white/60" : "text-gray-500"
+              }
+            >
+              PRO
+            </span>
           </span>
         </Link>
 
@@ -106,11 +140,19 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className="group relative text-sm font-medium text-gray-700 transition hover:text-black"
+              className={`group relative text-sm font-medium transition-colors duration-300 ${
+                isGlassTransparent
+                  ? "text-white/90 hover:text-white"
+                  : "text-gray-700 hover:text-black"
+              }`}
             >
               {link.label}
 
-              <span className="absolute -bottom-1 left-0 h-[1.5px] w-0 bg-black transition-all duration-300 ease-out group-hover:w-full" />
+              <span
+                className={`absolute -bottom-1 left-0 h-[1.5px] w-0 transition-all duration-300 ease-out group-hover:w-full ${
+                  isGlassTransparent ? "bg-white" : "bg-black"
+                }`}
+              />
             </Link>
           ))}
         </nav>
@@ -128,14 +170,22 @@ export default function Navbar() {
             <>
               <Link
                 href="/become-trainer"
-                className="rounded-full border border-black px-5 py-2.5 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 hover:bg-black hover:text-white"
+                className={`rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 ${
+                  isGlassTransparent
+                    ? "border border-white/40 text-white backdrop-blur-md hover:bg-white hover:text-black"
+                    : "border border-black text-black hover:bg-black hover:text-white"
+                }`}
               >
                 Become a Trainer
               </Link>
 
               <Link
                 href="/login"
-                className="rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-gray-800 hover:shadow-lg"
+                className={`rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${
+                  isGlassTransparent
+                    ? "bg-white text-black hover:bg-white/90"
+                    : "bg-black text-white hover:bg-gray-800"
+                }`}
               >
                 Login
               </Link>
@@ -153,7 +203,11 @@ export default function Navbar() {
               {showBecomeTrainer && (
                 <Link
                   href="/become-trainer"
-                  className="rounded-full border border-black px-5 py-2.5 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 hover:bg-black hover:text-white"
+                  className={`rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 ${
+                    isGlassTransparent
+                      ? "border border-white/40 text-white backdrop-blur-md hover:bg-white hover:text-black"
+                      : "border border-black text-black hover:bg-black hover:text-white"
+                  }`}
                 >
                   Become a Trainer
                 </Link>
@@ -164,21 +218,35 @@ export default function Navbar() {
               <div className="relative">
                 <button
                   onClick={() => setProfileMenu(!profileMenu)}
-                  className="flex items-center gap-2 rounded-full border border-gray-200 py-1.5 pl-1.5 pr-3 transition-colors hover:border-gray-300"
+                  className={`flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3 transition-colors duration-300 ${
+                    isGlassTransparent
+                      ? "border border-white/30 bg-white/10 backdrop-blur-md hover:border-white/50"
+                      : "border border-gray-200 hover:border-gray-300"
+                  }`}
                 >
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-black text-sm font-semibold text-white">
+                  <div
+                    className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold ${
+                      isGlassTransparent
+                        ? "bg-white text-black"
+                        : "bg-black text-white"
+                    }`}
+                  >
                     {firstName?.charAt(0)?.toUpperCase()}
                   </div>
 
-                  <span className="text-sm font-medium text-black">
+                  <span
+                    className={`text-sm font-medium ${
+                      isGlassTransparent ? "text-white" : "text-black"
+                    }`}
+                  >
                     {firstName}
                   </span>
 
                   <ChevronDown
                     size={16}
-                    className={`text-gray-500 transition-transform duration-200 ${
+                    className={`transition-transform duration-200 ${
                       profileMenu ? "rotate-180" : ""
-                    }`}
+                    } ${isGlassTransparent ? "text-white/80" : "text-gray-500"}`}
                   />
                 </button>
 
@@ -203,9 +271,7 @@ export default function Navbar() {
                           {user?.name}
                         </p>
 
-                        <p className="text-sm text-gray-500">
-                          {user?.email}
-                        </p>
+                        <p className="text-sm text-gray-500">{user?.email}</p>
 
                         {role && (
                           <p className="mt-1 text-xs capitalize text-gray-400">
@@ -376,6 +442,8 @@ export default function Navbar() {
             <Menu
               size={24}
               className={`absolute inset-0 transition-all duration-300 ${
+                isGlassTransparent ? "text-white" : "text-black"
+              } ${
                 mobileMenu
                   ? "scale-50 rotate-90 opacity-0"
                   : "scale-100 rotate-0 opacity-100"
@@ -385,6 +453,8 @@ export default function Navbar() {
             <X
               size={24}
               className={`absolute inset-0 transition-all duration-300 ${
+                isGlassTransparent ? "text-white" : "text-black"
+              } ${
                 mobileMenu
                   ? "scale-100 rotate-0 opacity-100"
                   : "scale-50 -rotate-90 opacity-0"
@@ -399,7 +469,11 @@ export default function Navbar() {
       ====================================================== */}
 
       <div
-        className={`overflow-hidden border-t border-gray-200 bg-white transition-all duration-300 ease-out md:hidden ${
+        className={`overflow-hidden border-t transition-all duration-300 ease-out md:hidden ${
+          isGlassTransparent
+            ? "border-white/10 bg-black/70 backdrop-blur-xl"
+            : "border-gray-200 bg-white"
+        } ${
           mobileMenu
             ? "max-h-[45rem] opacity-100"
             : "max-h-0 border-t-0 opacity-0"
@@ -413,7 +487,11 @@ export default function Navbar() {
               key={link.href}
               href={link.href}
               onClick={() => setMobileMenu(false)}
-              className="font-medium text-gray-700 transition-colors hover:text-black"
+              className={`font-medium transition-colors ${
+                isGlassTransparent
+                  ? "text-white/90 hover:text-white"
+                  : "text-gray-700 hover:text-black"
+              }`}
             >
               {link.label}
             </Link>
@@ -428,7 +506,11 @@ export default function Navbar() {
               <Link
                 href="/become-trainer"
                 onClick={() => setMobileMenu(false)}
-                className="rounded-full border border-black px-5 py-3 text-center font-semibold transition-colors hover:bg-black hover:text-white"
+                className={`rounded-full px-5 py-3 text-center font-semibold transition-colors ${
+                  isGlassTransparent
+                    ? "border border-white/40 text-white hover:bg-white hover:text-black"
+                    : "border border-black text-black hover:bg-black hover:text-white"
+                }`}
               >
                 Become a Trainer
               </Link>
@@ -436,7 +518,11 @@ export default function Navbar() {
               <Link
                 href="/login"
                 onClick={() => setMobileMenu(false)}
-                className="rounded-full bg-black px-5 py-3 text-center font-semibold text-white transition-colors hover:bg-gray-800"
+                className={`rounded-full px-5 py-3 text-center font-semibold transition-colors ${
+                  isGlassTransparent
+                    ? "bg-white text-black hover:bg-white/90"
+                    : "bg-black text-white hover:bg-gray-800"
+                }`}
               >
                 Login
               </Link>
@@ -448,25 +534,47 @@ export default function Navbar() {
           ================================================== */}
 
           {isLoggedIn && (
-            <div className="mt-2 flex flex-col gap-1 border-t border-gray-100 pt-4">
+            <div
+              className={`mt-2 flex flex-col gap-1 border-t pt-4 ${
+                isGlassTransparent ? "border-white/10" : "border-gray-100"
+              }`}
+            >
               {/* User Information */}
 
               <div className="flex items-center gap-3 px-1 pb-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-sm font-semibold text-white">
+                <div
+                  className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${
+                    isGlassTransparent
+                      ? "bg-white text-black"
+                      : "bg-black text-white"
+                  }`}
+                >
                   {firstName?.charAt(0)?.toUpperCase()}
                 </div>
 
                 <div>
-                  <p className="text-sm font-semibold text-black">
+                  <p
+                    className={`text-sm font-semibold ${
+                      isGlassTransparent ? "text-white" : "text-black"
+                    }`}
+                  >
                     {user?.name}
                   </p>
 
-                  <p className="text-xs text-gray-500">
+                  <p
+                    className={`text-xs ${
+                      isGlassTransparent ? "text-white/60" : "text-gray-500"
+                    }`}
+                  >
                     {user?.email}
                   </p>
 
                   {role && (
-                    <p className="text-xs capitalize text-gray-400">
+                    <p
+                      className={`text-xs capitalize ${
+                        isGlassTransparent ? "text-white/50" : "text-gray-400"
+                      }`}
+                    >
                       {role}
                     </p>
                   )}
@@ -484,45 +592,45 @@ export default function Navbar() {
                   <Link
                     href="/become-trainer"
                     onClick={() => setMobileMenu(false)}
-                    className="mb-2 rounded-full border border-black px-5 py-3 text-center text-sm font-semibold transition-colors hover:bg-black hover:text-white"
+                    className={`mb-2 rounded-full px-5 py-3 text-center text-sm font-semibold transition-colors ${
+                      isGlassTransparent
+                        ? "border border-white/40 text-white hover:bg-white hover:text-black"
+                        : "border border-black text-black hover:bg-black hover:text-white"
+                    }`}
                   >
                     Become a Trainer
                   </Link>
-
-                  {/* Profile */}
 
                   <ProfileMenuItem
                     href="/user/profile"
                     icon={User}
                     label="My Profile"
                     onClick={() => setMobileMenu(false)}
+                    light={isGlassTransparent}
                   />
-
-                  {/* Bookings */}
 
                   <ProfileMenuItem
                     href="/user/bookings"
                     icon={Calendar}
                     label="My Bookings"
                     onClick={() => setMobileMenu(false)}
+                    light={isGlassTransparent}
                   />
-
-                  {/* Training */}
 
                   <ProfileMenuItem
                     href="/user/training"
                     icon={BookOpen}
                     label="My Training"
                     onClick={() => setMobileMenu(false)}
+                    light={isGlassTransparent}
                   />
-
-                  {/* Settings */}
 
                   <ProfileMenuItem
                     href="/user/settings"
                     icon={Settings}
                     label="Settings"
                     onClick={() => setMobileMenu(false)}
+                    light={isGlassTransparent}
                   />
                 </>
               )}
@@ -533,31 +641,28 @@ export default function Navbar() {
 
               {isTrainer && (
                 <>
-                  {/* Trainer Profile */}
-
                   <ProfileMenuItem
                     href="/trainer/profile"
                     icon={User}
                     label="My Profile"
                     onClick={() => setMobileMenu(false)}
+                    light={isGlassTransparent}
                   />
-
-                  {/* Trainer Dashboard */}
 
                   <ProfileMenuItem
                     href="/trainer/dashboard"
                     icon={LayoutDashboard}
                     label="Trainer Dashboard"
                     onClick={() => setMobileMenu(false)}
+                    light={isGlassTransparent}
                   />
-
-                  {/* Trainer Settings */}
 
                   <ProfileMenuItem
                     href="/trainer/settings"
                     icon={Settings}
                     label="Settings"
                     onClick={() => setMobileMenu(false)}
+                    light={isGlassTransparent}
                   />
                 </>
               )}
@@ -573,6 +678,7 @@ export default function Navbar() {
                     icon={Building2}
                     label="Gym Owner Dashboard"
                     onClick={() => setMobileMenu(false)}
+                    light={isGlassTransparent}
                   />
 
                   <ProfileMenuItem
@@ -580,6 +686,7 @@ export default function Navbar() {
                     icon={Building2}
                     label="Gym Profile"
                     onClick={() => setMobileMenu(false)}
+                    light={isGlassTransparent}
                   />
 
                   <ProfileMenuItem
@@ -587,6 +694,7 @@ export default function Navbar() {
                     icon={Calendar}
                     label="Trainer Requests"
                     onClick={() => setMobileMenu(false)}
+                    light={isGlassTransparent}
                   />
 
                   <ProfileMenuItem
@@ -594,6 +702,7 @@ export default function Navbar() {
                     icon={Settings}
                     label="Settings"
                     onClick={() => setMobileMenu(false)}
+                    light={isGlassTransparent}
                   />
                 </>
               )}
@@ -604,31 +713,28 @@ export default function Navbar() {
 
               {isAdmin && (
                 <>
-                  {/* Admin Profile */}
-
                   <ProfileMenuItem
                     href="/admin/profile"
                     icon={User}
                     label="My Profile"
                     onClick={() => setMobileMenu(false)}
+                    light={isGlassTransparent}
                   />
-
-                  {/* Admin Dashboard */}
 
                   <ProfileMenuItem
                     href="/admin/dashboard"
                     icon={ShieldCheck}
                     label="Admin Dashboard"
                     onClick={() => setMobileMenu(false)}
+                    light={isGlassTransparent}
                   />
-
-                  {/* Admin Settings */}
 
                   <ProfileMenuItem
                     href="/admin/settings"
                     icon={Settings}
                     label="Settings"
                     onClick={() => setMobileMenu(false)}
+                    light={isGlassTransparent}
                   />
                 </>
               )}
@@ -639,7 +745,7 @@ export default function Navbar() {
 
               <button
                 onClick={handleLogout}
-                className="mt-1 flex items-center gap-3 px-1 py-2.5 text-sm font-medium text-red-600 transition-colors hover:text-red-700"
+                className="mt-1 flex items-center gap-3 px-1 py-2.5 text-sm font-medium text-red-500 transition-colors hover:text-red-600"
               >
                 <LogOut size={17} />
                 Logout
@@ -654,19 +760,20 @@ export default function Navbar() {
 
 /* =============================================================
    PROFILE MENU ITEM
+   `light` renders the item in white text for the transparent
+   mobile menu; omitted/false keeps the original dark styling.
 ============================================================= */
 
-function ProfileMenuItem({
-  href,
-  icon: Icon,
-  label,
-  onClick,
-}) {
+function ProfileMenuItem({ href, icon: Icon, label, onClick, light = false }) {
   return (
     <Link
       href={href}
       onClick={onClick}
-      className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-black"
+      className={`flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors ${
+        light
+          ? "text-white/90 hover:bg-white/10 hover:text-white"
+          : "text-gray-700 hover:bg-gray-50 hover:text-black"
+      }`}
     >
       <Icon size={17} />
       {label}

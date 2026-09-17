@@ -10,83 +10,77 @@ import {
 
 export default function Hero() {
   return (
-    <section className="relative min-h-[calc(100vh-80px)] overflow-hidden bg-black text-white">
+    <section className="relative min-h-[calc(100vh-80px)] overflow-hidden bg-gray-50 text-black">
       {/* ================= BACKGROUND IMAGE ================= */}
       <div className="absolute inset-0">
         <picture>
-          {/* Mobile Background */}
+          {/* Mobile background */}
           <source
             media="(max-width: 767px)"
             srcSet="https://images.pexels.com/photos/24244667/pexels-photo-24244667.jpeg"
           />
 
-          {/* Tablet + Desktop Background */}
+          {/* Desktop background */}
           <img
-            src="https://images.pexels.com/photos/3838857/pexels-photo-3838857.jpeg"
-            alt="Fitness trainer"
+            src="https://images.pexels.com/photos/6311509/pexels-photo-6311509.jpeg"
+            alt="Fitness trainer working out"
             className="h-full w-full object-cover object-center animate-kenburns"
           />
         </picture>
 
-        {/* Dark Overlay */}
-        <div className="absolute inset-0 bg-black/20" />
+        {/* Bright overlay */}
+        <div className="absolute inset-0 bg-white/2" />
 
-        {/* Left Side Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/65 to-black/20" />
-
-        {/* Bottom Gradient */}
-        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
+        
       </div>
 
       {/* ================= HERO CONTENT ================= */}
       <div className="relative mx-auto flex min-h-fit max-w-7xl items-center px-6 py-10 sm:min-h-[calc(100vh-80px)] sm:py-16 lg:px-8 lg:py-20">
-        {/* ================= LEFT CONTENT ================= */}
         <div className="w-full max-w-2xl">
           {/* Badge */}
           <div
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white shadow-sm backdrop-blur-md animate-fade-up"
+            className="animate-fade-up mb-6 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2 text-sm font-medium text-black shadow-sm backdrop-blur-md"
             style={{ animationDelay: "0.1s" }}
           >
             <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-black/40 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-black" />
             </span>
 
             Your fitness journey starts here
           </div>
 
-          {/* ================= HEADING ================= */}
+          {/* Heading */}
           <h1
-            className="text-5xl font-black leading-[0.95] tracking-[-0.04em] text-white sm:text-6xl lg:text-7xl xl:text-[82px] animate-fade-up"
+            className="animate-fade-up text-5xl font-black leading-[0.95] tracking-[-0.04em] text-black sm:text-6xl lg:text-7xl xl:text-[82px]"
             style={{ animationDelay: "0.25s" }}
           >
             TRANSFORM
             <br />
-            YOUR <span className="text-white/45">BODY.</span>
+            YOUR <span className="text-black/25">BODY.</span>
             <br />
             TRANSFORM
             <br />
             YOUR LIFE.
           </h1>
 
-          {/* ================= DESCRIPTION ================= */}
+          {/* Description */}
           <p
-            className="mt-7 max-w-xl text-base leading-7 text-white/70 sm:text-lg animate-fade-up"
+            className="animate-fade-up mt-7 max-w-xl text-base leading-7 text-black/60 sm:text-lg"
             style={{ animationDelay: "0.4s" }}
           >
             Train with certified trainers, follow personalized programs, and
             build the stronger, healthier version of yourself.
           </p>
 
-          {/* ================= BUTTONS ================= */}
+          {/* Buttons */}
           <div
-            className="mt-9 flex flex-col gap-3 sm:flex-row animate-fade-up"
+            className="animate-fade-up mt-9 flex flex-col gap-3 sm:flex-row"
             style={{ animationDelay: "0.55s" }}
           >
-            {/* Find Trainer */}
             <Link
               href="/trainers"
-              className="group inline-flex items-center justify-center gap-3 rounded-full bg-white px-7 py-4 text-sm font-bold text-black transition-all duration-300 hover:-translate-y-1 hover:bg-gray-100 hover:shadow-xl"
+              className="group inline-flex items-center justify-center gap-3 rounded-full bg-black px-7 py-4 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-gray-800 hover:shadow-xl"
             >
               Find Your Trainer
 
@@ -96,64 +90,61 @@ export default function Hero() {
               />
             </Link>
 
-            {/* Free Demo */}
             <Link
-              href="/demo"
-              className="inline-flex items-center justify-center gap-3 rounded-full border border-white/30 bg-white/10 px-7 py-4 text-sm font-bold text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-white hover:bg-white hover:text-black hover:shadow-lg"
+              href="/videos"
+              className="inline-flex items-center justify-center gap-3 rounded-full border border-black/15 bg-white/75 px-7 py-4 text-sm font-bold text-black backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-black hover:bg-black hover:text-white hover:shadow-lg"
             >
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-black">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black text-white">
                 <Play size={12} fill="currentColor" />
               </span>
 
-              Book a Free Demo
+              See Demo Videos
             </Link>
           </div>
 
-          {/* ================= TRUST POINTS ================= */}
+          {/* Trust points */}
           <div
-            className="mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/65 animate-fade-up"
+            className="animate-fade-up mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm text-black/60"
             style={{ animationDelay: "0.7s" }}
           >
             <div className="flex items-center gap-2">
-              <CheckCircle2 size={17} className="text-white" />
+              <CheckCircle2 size={17} className="text-black" />
               Certified Trainers
             </div>
 
             <div className="flex items-center gap-2">
-              <CheckCircle2 size={17} className="text-white" />
+              <CheckCircle2 size={17} className="text-black" />
               Personalized Plans
             </div>
 
             <div className="flex items-center gap-2">
-              <CheckCircle2 size={17} className="text-white" />
+              <CheckCircle2 size={17} className="text-black" />
               Flexible Training
             </div>
           </div>
 
-          {/* ================= MOBILE STATS ================= */}
+          {/* Mobile stats */}
           <div className="mt-10 grid grid-cols-2 gap-3 sm:hidden">
-            {/* Community */}
-            <div className="min-w-0 rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-md">
-              <p className="text-xs uppercase tracking-wider text-white/50">
+            <div className="min-w-0 rounded-2xl border border-black/10 bg-white/80 p-4 shadow-sm backdrop-blur-md">
+              <p className="text-xs uppercase tracking-wider text-black/45">
                 Community
               </p>
 
-              <p className="mt-1 text-2xl font-black">10K+</p>
+              <p className="mt-1 text-2xl font-black text-black">10K+</p>
             </div>
 
-            {/* Rating */}
-            <div className="min-w-0 rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-md">
-              <p className="text-xs uppercase tracking-wider text-white/50">
+            <div className="min-w-0 rounded-2xl border border-black/10 bg-white/80 p-4 shadow-sm backdrop-blur-md">
+              <p className="text-xs uppercase tracking-wider text-black/45">
                 Rating
               </p>
 
-              <p className="mt-1 text-2xl font-black">4.9/5</p>
+              <p className="mt-1 text-2xl font-black text-black">4.9/5</p>
             </div>
           </div>
         </div>
 
-        {/* ================= SCROLL INDICATOR ================= */}
-        <div className="absolute bottom-8 right-8 hidden flex-col items-center gap-2 text-white/50 animate-soft-bounce lg:flex">
+        {/* Scroll indicator */}
+        <div className="animate-soft-bounce absolute bottom-8 right-8 hidden flex-col items-center gap-2 text-black/45 lg:flex">
           <span className="text-xs uppercase tracking-widest [writing-mode:vertical-rl]">
             Scroll
           </span>

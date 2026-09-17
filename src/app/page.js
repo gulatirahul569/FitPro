@@ -7,18 +7,20 @@ import WhyChooseUs from "@/components/home/WhyChooseUs";
 import Testimonials from "@/components/home/Testimonials";
 import BecomeTrainer from "@/components/home/BecomeTrainer";
 import FinalCta from "@/components/home/FinalCta";
+import OurStory from "@/components/home/Ourstory";
 
 export default function Home() {
   return (
     <main>
       <Hero />
       <FeaturedTrainers />
+      <OurStory />
       <HowItWorks />
-      <Categories />
       <VideoSection />
       <WhyChooseUs />
       <Testimonials />
       <BecomeTrainer />
+      <Categories />
       <FinalCta />
     </main>
   );

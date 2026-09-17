@@ -8,6 +8,7 @@ export default function Reveal({ children, delay = 0, className = "" }) {
 
   useEffect(() => {
     const node = ref.current;
+
     if (!node) return;
 
     const observer = new IntersectionObserver(
@@ -17,20 +18,29 @@ export default function Reveal({ children, delay = 0, className = "" }) {
           observer.unobserve(node);
         }
       },
-      { threshold: 0.15 }
+      {
+        threshold: 0.15,
+      }
     );
 
     observer.observe(node);
-    return () => observer.disconnect();
+
+    return () => {
+      observer.disconnect();
+    };
   }, []);
 
   return (
     <div
       ref={ref}
-      className={`transition-all duration-700 ease-out ${
-        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-      } ${className}`}
-      style={{ transitionDelay: visible ? `${delay}ms` : "0ms" }}
+      className={[
+        "transition-all duration-700 ease-out",
+        visible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0",
+        className,
+      ].join(" ")}
+      style={{
+        transitionDelay: visible ? `${delay}ms` : "0ms",
+      }}
     >
       {children}
     </div>

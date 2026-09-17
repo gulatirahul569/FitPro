@@ -1,54 +1,99 @@
+"use client";
+
 import Link from "next/link";
-import { Star, Building2 } from "lucide-react";
+import { useState } from "react";
+import { Star, Heart, MapPin } from "lucide-react";
 
 export default function TrainerCard({ trainer }) {
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  const handleFavoriteClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsFavorite((prev) => !prev);
+  };
+
+  const hasReviews = trainer.reviewCount && trainer.reviewCount > 0;
+
   return (
-    <div className="rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300">
-      <div className="relative h-64 w-full">
+    <Link
+      href={`/trainers/${trainer.id}`}
+      className="group block overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+    >
+      {/* ================= IMAGE ================= */}
+      <div className="relative h-64 w-full overflow-hidden">
         <img
           src={trainer.photo}
           alt={trainer.name}
-          className="h-full w-full object-cover"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
+
+        {/* Bottom gradient so the name stays readable on any photo */}
+        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+
+
+
+        {/* Name + location overlay */}
+        <div className="absolute inset-x-0 bottom-0 p-4">
+          <h3 className="text-lg font-bold leading-tight text-white">
+            {trainer.name}
+          </h3>
+
+          {(trainer.location || trainer.gymName) && (
+            <p className="mt-0.5 flex items-center gap-1 text-sm text-white/80">
+              <MapPin size={13} />
+              {trainer.location || trainer.gymName}
+            </p>
+          )}
+        </div>
       </div>
 
+      {/* ================= DETAILS ================= */}
       <div className="p-5">
-        <div className="flex items-center justify-between mb-1">
-          <h3 className="text-lg font-semibold text-black">{trainer.name}</h3>
-          <div className="flex items-center gap-1 text-sm font-medium text-yellow-500">
-            <Star size={16} fill="currentColor" />
-            {trainer.rating}
-          </div>
+        {/* Rating row */}
+        <div className="mb-2 flex items-center gap-1.5 text-sm">
+          <Star size={16} className="fill-yellow-400 text-yellow-400" />
+
+          {hasReviews ? (
+            <>
+              <span className="font-semibold text-black">
+                {trainer.rating}
+              </span>
+              <span className="text-gray-500">
+                ({trainer.reviewCount} review
+                {trainer.reviewCount > 1 ? "s" : ""})
+              </span>
+            </>
+          ) : (
+            <span className="font-semibold text-black">New</span>
+          )}
         </div>
 
-        <p className="text-sm text-gray-500 mb-1">
-          {trainer.specialization} • {trainer.experience}
+        {/* Specialization / experience */}
+        <p className="mb-2 text-sm text-gray-500">
+          {trainer.specialization}
+          {trainer.experience ? ` • ${trainer.experience}` : ""}
         </p>
 
-        {trainer.gymName && (
-          <p className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-            <Building2 size={12} />
-            {trainer.gymName}
-          </p>
-        )}
-
-        <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+        {/* Description */}
+        <p className="mb-4 line-clamp-2 text-sm text-gray-600">
           {trainer.description}
         </p>
 
-        <div className="flex items-center justify-between">
+        {/* Price row */}
+        <div className="flex items-center justify-between border-t border-gray-100 pt-3">
           <span className="text-base font-bold text-black">
             ₹{trainer.price}
             <span className="text-sm font-normal text-gray-500">/month</span>
           </span>
-          <Link
-            href={`/trainers/${trainer.id}`}
-            className="px-4 py-2 rounded-lg bg-black text-white text-sm font-medium hover:bg-gray-800 transition-colors"
-          >
-            View Profile
-          </Link>
+
+          {trainer.firstSessionFree && (
+            <span className="text-sm font-medium text-red-500">
+              1st session free
+            </span>
+          )}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
