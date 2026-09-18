@@ -53,13 +53,13 @@ function FacebookIcon({ size = 24, ...props }) {
 const platformLinks = [
   { href: "/trainers", label: "Find Trainers" },
   { href: "/videos", label: "Fitness Videos" },
-  { href: "/programs", label: "Training Programs" },
+  { href: "/", label: "Training Programs" },
 ];
 
 const companyLinks = [
-  { href: "/about", label: "About FitPro" },
-  { href: "/contact", label: "Contact Us" },
-  { href: "/faq", label: "Frequently Asked Questions" },
+  { href: "/", label: "About FitPro" },
+  { href: "/", label: "Contact Us" },
+  { href: "/", label: "Frequently Asked Questions" },
 ];
 
 const socialLinks = [
