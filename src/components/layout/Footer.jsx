@@ -190,21 +190,21 @@ export default function Footer() {
 
           <div className="flex flex-wrap justify-center gap-x-5 gap-y-2">
             <Link
-              href="/privacy"
+              href="/"
               className="transition-colors duration-200 hover:text-white"
             >
               Privacy
             </Link>
 
             <Link
-              href="/terms"
+              href="/"
               className="transition-colors duration-200 hover:text-white"
             >
               Terms
             </Link>
 
             <Link
-              href="/cookies"
+              href="/"
               className="transition-colors duration-200 hover:text-white"
             >
               Cookies
