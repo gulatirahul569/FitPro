@@ -21,7 +21,7 @@ import {
 
 const navLinks = [
   { href: "/", label: "Home" },
-  { href: "/about", label: "About" },
+  { href: "/#our-story", label: "About" },
   { href: "/trainers", label: "Trainers" },
   { href: "/videos", label: "Videos" },
   { href: "/gyms", label: "Gyms" },
@@ -37,43 +37,35 @@ export default function Navbar() {
 
   const isLoggedIn = status === "authenticated";
   const user = session?.user;
-
   const firstName = user?.name?.split(" ")[0];
 
-  // User role
   const role = user?.role;
 
-  // Role checks
   const isNormalUser = role === "user";
   const isTrainer = role === "trainer";
   const isAdmin = role === "admin";
   const isGymOwner = role === "gym-owner";
 
-  // Dashboard routes
   const isDashboard =
     pathname.startsWith("/user/") ||
     pathname.startsWith("/trainer/") ||
     pathname.startsWith("/admin/") ||
     pathname.startsWith("/gym-owner/");
 
-  // Become a Trainer:
-  // Logged out -> SHOW
-  // User       -> SHOW
-  // Trainer    -> HIDE
-  // Admin      -> HIDE
-  // Gym Owner  -> HIDE
   const showBecomeTrainer = !isLoggedIn || isNormalUser;
 
-  // ================= GLASS / TRANSPARENT NAVBAR LOGIC =================
-  // Only the homepage (which has the dark hero behind it) gets the
-  // fully see-through "glass" state, and only while at the very top.
-  // Everything else (other pages, or once you scroll past the hero)
-  // gets the frosted-glass fixed navbar instead.
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 40);
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 40);
+    };
+
     handleScroll();
+
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   const isGlassTransparent = pathname === "/" && !isDashboard && !isScrolled;
@@ -95,15 +87,12 @@ export default function Navbar() {
           : `fixed inset-x-0 top-0 ${
               isGlassTransparent
                 ? "border-b border-white/10 bg-transparent"
-                : "border-b border-white/20 bg-white/70 backdrop-blur-xl shadow-sm shadow-black/5"
+                : "border-b border-white/20 bg-white/70 shadow-sm shadow-black/5 backdrop-blur-xl"
             }`
       }`}
     >
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6">
-        {/* =====================================================
-            LOGO
-        ====================================================== */}
-
+      <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-6">
+        {/* Logo */}
         <Link href="/" className="group flex items-center gap-2">
           <div
             className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-300 ease-out group-hover:rotate-12 ${
@@ -116,14 +105,14 @@ export default function Navbar() {
           </div>
 
           <span
-            className={`text-2xl font-extrabold tracking-tight transition-colors duration-300 ${
+            className={`text-3xl font-extrabold tracking-tight transition-colors duration-300 ${
               isGlassTransparent ? "text-white" : "text-black"
             }`}
           >
             FIT
             <span
               className={
-                isGlassTransparent ? "text-white/60" : "text-gray-500"
+                isGlassTransparent ? "text-white/50" : "text-gray-500"
               }
             >
               PRO
@@ -131,18 +120,15 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* =====================================================
-            DESKTOP NAVIGATION
-        ====================================================== */}
-
+        {/* Desktop navigation */}
         <nav className="hidden items-center gap-8 md:flex">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`group relative text-sm font-medium transition-colors duration-300 ${
+              className={`group relative text-lg font-medium transition-colors duration-300 ${
                 isGlassTransparent
-                  ? "text-white/90 hover:text-white"
+                  ? "text-white hover:text-white"
                   : "text-gray-700 hover:text-black"
               }`}
             >
@@ -157,23 +143,16 @@ export default function Navbar() {
           ))}
         </nav>
 
-        {/* =====================================================
-            DESKTOP ACTIONS
-        ====================================================== */}
-
+        {/* Desktop actions */}
         <div className="hidden items-center gap-3 md:flex">
-          {/* =================================================
-              LOGGED OUT
-          ================================================== */}
-
           {!isLoggedIn && (
             <>
               <Link
                 href="/become-trainer"
-                className={`rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 ${
+                className={`rounded-full px-5 py-2.5 text-lg font-semibold transition-all duration-300 hover:-translate-y-0.5 ${
                   isGlassTransparent
-                    ? "border border-white/40 text-white backdrop-blur-md hover:bg-white hover:text-black"
-                    : "border border-black text-black hover:bg-black hover:text-white"
+                    ? "bg-white text-black hover:bg-white/90"
+                    : "bg-black text-white hover:bg-gray-800"
                 }`}
               >
                 Become a Trainer
@@ -181,7 +160,7 @@ export default function Navbar() {
 
               <Link
                 href="/login"
-                className={`rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${
+                className={`rounded-full px-5 py-2.5 text-lg font-semibold transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${
                   isGlassTransparent
                     ? "bg-white text-black hover:bg-white/90"
                     : "bg-black text-white hover:bg-gray-800"
@@ -192,14 +171,8 @@ export default function Navbar() {
             </>
           )}
 
-          {/* =================================================
-              LOGGED IN
-          ================================================== */}
-
           {isLoggedIn && (
             <div className="flex items-center gap-3">
-              {/* Become a Trainer - ONLY USER */}
-
               {showBecomeTrainer && (
                 <Link
                   href="/become-trainer"
@@ -213,11 +186,10 @@ export default function Navbar() {
                 </Link>
               )}
 
-              {/* Profile */}
-
               <div className="relative">
                 <button
-                  onClick={() => setProfileMenu(!profileMenu)}
+                  type="button"
+                  onClick={() => setProfileMenu((current) => !current)}
                   className={`flex items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3 transition-colors duration-300 ${
                     isGlassTransparent
                       ? "border border-white/30 bg-white/10 backdrop-blur-md hover:border-white/50"
@@ -250,22 +222,14 @@ export default function Navbar() {
                   />
                 </button>
 
-                {/* =================================================
-                    PROFILE DROPDOWN
-                ================================================== */}
-
                 {profileMenu && (
                   <>
-                    {/* Backdrop */}
-
                     <div
                       className="fixed inset-0 z-40"
                       onClick={() => setProfileMenu(false)}
                     />
 
                     <div className="absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl">
-                      {/* User Information */}
-
                       <div className="border-b border-gray-100 px-4 py-4">
                         <p className="font-semibold text-black">
                           {user?.name}
@@ -280,13 +244,7 @@ export default function Navbar() {
                         )}
                       </div>
 
-                      {/* =================================================
-                          MENU ITEMS
-                      ================================================== */}
-
                       <div className="py-2">
-                        {/* ================= USER ================= */}
-
                         {isNormalUser && (
                           <>
                             <ProfileMenuItem
@@ -319,8 +277,6 @@ export default function Navbar() {
                           </>
                         )}
 
-                        {/* ================= TRAINER ================= */}
-
                         {isTrainer && (
                           <>
                             <ProfileMenuItem
@@ -345,8 +301,6 @@ export default function Navbar() {
                             />
                           </>
                         )}
-
-                        {/* ================= GYM OWNER ================= */}
 
                         {isGymOwner && (
                           <>
@@ -380,8 +334,6 @@ export default function Navbar() {
                           </>
                         )}
 
-                        {/* ================= ADMIN ================= */}
-
                         {isAdmin && (
                           <>
                             <ProfileMenuItem
@@ -408,12 +360,9 @@ export default function Navbar() {
                         )}
                       </div>
 
-                      {/* =================================================
-                          LOGOUT
-                      ================================================== */}
-
                       <div className="border-t border-gray-100 py-2">
                         <button
+                          type="button"
                           onClick={handleLogout}
                           className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
                         >
@@ -429,14 +378,13 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* =====================================================
-            MOBILE BUTTON
-        ====================================================== */}
-
+        {/* Mobile menu button */}
         <button
-          onClick={() => setMobileMenu(!mobileMenu)}
+          type="button"
+          onClick={() => setMobileMenu((current) => !current)}
           className="rounded-lg p-2 md:hidden"
           aria-label="Toggle menu"
+          aria-expanded={mobileMenu}
         >
           <div className="relative h-6 w-6">
             <Menu
@@ -464,10 +412,7 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* =====================================================
-          MOBILE MENU
-      ====================================================== */}
-
+      {/* Mobile menu */}
       <div
         className={`overflow-hidden border-t transition-all duration-300 ease-out md:hidden ${
           isGlassTransparent
@@ -480,8 +425,6 @@ export default function Navbar() {
         }`}
       >
         <nav className="flex flex-col gap-4 px-6 py-5">
-          {/* Main Navigation */}
-
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -496,10 +439,6 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-
-          {/* =================================================
-              MOBILE LOGGED OUT
-          ================================================== */}
 
           {!isLoggedIn && (
             <div className="mt-2 flex flex-col gap-3">
@@ -529,18 +468,12 @@ export default function Navbar() {
             </div>
           )}
 
-          {/* =================================================
-              MOBILE LOGGED IN
-          ================================================== */}
-
           {isLoggedIn && (
             <div
               className={`mt-2 flex flex-col gap-1 border-t pt-4 ${
                 isGlassTransparent ? "border-white/10" : "border-gray-100"
               }`}
             >
-              {/* User Information */}
-
               <div className="flex items-center gap-3 px-1 pb-3">
                 <div
                   className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${
@@ -572,7 +505,9 @@ export default function Navbar() {
                   {role && (
                     <p
                       className={`text-xs capitalize ${
-                        isGlassTransparent ? "text-white/50" : "text-gray-400"
+                        isGlassTransparent
+                          ? "text-white/50"
+                          : "text-gray-400"
                       }`}
                     >
                       {role}
@@ -581,14 +516,8 @@ export default function Navbar() {
                 </div>
               </div>
 
-              {/* =================================================
-                  NORMAL USER
-              ================================================== */}
-
               {isNormalUser && (
                 <>
-                  {/* Become Trainer */}
-
                   <Link
                     href="/become-trainer"
                     onClick={() => setMobileMenu(false)}
@@ -635,10 +564,6 @@ export default function Navbar() {
                 </>
               )}
 
-              {/* =================================================
-                  TRAINER
-              ================================================== */}
-
               {isTrainer && (
                 <>
                   <ProfileMenuItem
@@ -666,10 +591,6 @@ export default function Navbar() {
                   />
                 </>
               )}
-
-              {/* =================================================
-                  GYM OWNER
-              ================================================== */}
 
               {isGymOwner && (
                 <>
@@ -707,10 +628,6 @@ export default function Navbar() {
                 </>
               )}
 
-              {/* =================================================
-                  ADMIN
-              ================================================== */}
-
               {isAdmin && (
                 <>
                   <ProfileMenuItem
@@ -739,11 +656,8 @@ export default function Navbar() {
                 </>
               )}
 
-              {/* =================================================
-                  LOGOUT
-              ================================================== */}
-
               <button
+                type="button"
                 onClick={handleLogout}
                 className="mt-1 flex items-center gap-3 px-1 py-2.5 text-sm font-medium text-red-500 transition-colors hover:text-red-600"
               >
@@ -757,12 +671,6 @@ export default function Navbar() {
     </header>
   );
 }
-
-/* =============================================================
-   PROFILE MENU ITEM
-   `light` renders the item in white text for the transparent
-   mobile menu; omitted/false keeps the original dark styling.
-============================================================= */
 
 function ProfileMenuItem({ href, icon: Icon, label, onClick, light = false }) {
   return (

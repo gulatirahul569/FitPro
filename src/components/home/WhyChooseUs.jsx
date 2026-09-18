@@ -40,7 +40,7 @@ const benefits = [
 export default function WhyChooseUs() {
   return (
     <section className="bg-gray-50 px-6 py-20 md:px-12 md:py-10 md:pt-0 ">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 md:grid-cols-2 md:gap-16">
+      <div className="mx-auto grid max-w-7xl px-10 grid-cols-1 items-center gap-12 md:grid-cols-2 md:gap-16">
         {/* ================= BENEFITS / LEFT ================= */}
         <Reveal>
           <div className="flex flex-col justify-center">

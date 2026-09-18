@@ -42,7 +42,7 @@ const categories = [
 export default function Categories() {
   return (
     <section className="bg-gray-50 px-6 py-20 md:px-12 md:py-12 md:pt-5">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-7xl px-8">
         {/* Heading */}
         <Reveal>
           <div className="mb-12 text-center">

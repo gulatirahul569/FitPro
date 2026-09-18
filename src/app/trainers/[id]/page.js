@@ -1,32 +1,57 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, MapPin, Clock, CheckCircle2, BadgeCheck, Building2 } from "lucide-react";
+import {
+  ArrowLeft,
+  MapPin,
+  Clock,
+  CheckCircle2,
+  BadgeCheck,
+  Building2,
+  MessageCircle,
+} from "lucide-react";
+
 import { trainers } from "@/data/trainers";
 import { getTrainerProfile } from "@/lib/models/trainerProfile";
 import { getTrainerRatingSummary } from "@/lib/models/review";
-import { getReviewableBooking } from "@/lib/models/booking";
+import {
+  getReviewableBooking,
+  hasUnlockedTrainerVideos,
+} from "@/lib/models/booking";
 import { getGymById } from "@/lib/models/gym";
+import { getVideosByTrainer } from "@/lib/models/video";
 import { auth } from "@/auth";
+
 import BookingModal from "@/components/trainers/BookingModal";
 import RateTrainerSection from "@/components/trainers/RateTrainerSection";
 import StarRating from "@/components/ui/StarRating";
-import { getVideosByTrainer } from "@/lib/models/video";
-import { hasUnlockedTrainerVideos } from "@/lib/models/booking";
-import VideoSection from "@/components/trainers/VideoSection";
+import TrainerVideoPreview from "@/components/trainers/TrainerVideoPreview";
+import Reveal from "@/components/ui/Reveal";
 
 async function getTrainer(id) {
   const numericId = Number(id);
 
+  /*
+    Mock trainers use numeric IDs:
+    /trainers/1
+    /trainers/2
+  */
   if (!Number.isNaN(numericId)) {
-    return trainers.find((t) => t.id === numericId) || null;
+    return trainers.find((trainer) => trainer.id === numericId) || null;
   }
 
+  /*
+    Database trainers use their user/profile ID.
+  */
   const profile = await getTrainerProfile(id);
-  if (!profile || !profile.isListed) return null;
+
+  if (!profile || !profile.isListed) {
+    return null;
+  }
 
   const ratingSummary = await getTrainerRatingSummary(id);
 
   let gym = null;
+
   if (profile.gymId && profile.gymStatus === "approved") {
     gym = await getGymById(profile.gymId);
   }
@@ -51,171 +76,325 @@ async function getTrainer(id) {
 
 export default async function TrainerProfilePage({ params }) {
   const { id } = await params;
+
   const trainer = await getTrainer(id);
 
-  if (!trainer) return notFound();
+  if (!trainer) {
+    notFound();
+  }
 
   const session = await auth();
+
+  /*
+    Numeric URL IDs are mock trainers.
+    Non-numeric IDs are database trainers.
+  */
   const isMockTrainer = !Number.isNaN(Number(id));
 
   let reviewableBooking = null;
-  if (session?.user && !isMockTrainer && session.user.id !== String(trainer.id)) {
-    reviewableBooking = await getReviewableBooking(session.user.id, String(trainer.id));
+
+  if (
+    session?.user &&
+    !isMockTrainer &&
+    session.user.id !== String(trainer.id)
+  ) {
+    reviewableBooking = await getReviewableBooking(
+      session.user.id,
+      String(trainer.id)
+    );
   }
 
   let trainerVideos = [];
   let hasUnlocked = false;
 
+  /*
+    Database trainer videos:
+    1. Keep approved videos only.
+    2. Sort oldest -> newest.
+    3. First video in the result becomes the free demo video.
+  */
   if (!isMockTrainer) {
     const allVideos = await getVideosByTrainer(String(trainer.id));
+
     trainerVideos = allVideos
-      .filter((v) => v.status === "approved")
-      .map((v) => ({ ...v, _id: v._id.toString() }));
+      .filter((video) => video.status === "approved")
+      .sort((firstVideo, secondVideo) => {
+        const firstVideoDate = new Date(
+          firstVideo.createdAt || firstVideo.uploadedAt || 0
+        ).getTime();
+
+        const secondVideoDate = new Date(
+          secondVideo.createdAt || secondVideo.uploadedAt || 0
+        ).getTime();
+
+        return firstVideoDate - secondVideoDate;
+      })
+      .map((video) => ({
+        ...video,
+        _id: video._id.toString(),
+      }));
 
     if (session?.user) {
-      hasUnlocked = await hasUnlockedTrainerVideos(session.user.id, String(trainer.id));
+      hasUnlocked = await hasUnlockedTrainerVideos(
+        session.user.id,
+        String(trainer.id)
+      );
     }
   }
 
   return (
-    <section className="bg-white min-h-screen">
-      <div className="max-w-6xl mx-auto px-6 md:px-12 py-8">
+    <section className="min-h-screen bg-gray-50 pt-24">
+      <div className="mx-auto max-w-7xl px-6 pb-20 md:px-12">
+        {/* Back button */}
         <Link
           href="/trainers"
-          className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-black transition-colors mb-8"
+          className="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-black/55 transition-colors hover:text-black"
         >
-          <ArrowLeft size={16} />
-          Back to Trainers
+          <ArrowLeft size={17} />
+          Back to trainers
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          <div className="lg:col-span-2">
-            <div className="flex flex-col sm:flex-row gap-6 mb-10">
-              <div className="w-full sm:w-56 h-64 rounded-2xl overflow-hidden shrink-0 bg-gray-100">
+        {/* =====================================================
+            PROFILE HERO
+        ====================================================== */}
+        <Reveal>
+          <div className="overflow-hidden rounded-3xl border border-black/10 bg-white">
+            <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr]">
+              {/* Trainer image */}
+              <div className="relative min-h-[350px] bg-gray-100 sm:min-h-[430px] lg:min-h-full">
                 {trainer.photo ? (
                   <img
                     src={trainer.photo}
                     alt={trainer.name}
-                    className="h-full w-full object-cover"
+                    className="absolute inset-0 h-full w-full object-cover"
                   />
                 ) : (
-                  <div className="h-full w-full flex items-center justify-center text-4xl font-bold text-gray-300">
+                  <div className="flex min-h-[350px] items-center justify-center bg-gray-200 text-7xl font-black text-gray-400">
                     {trainer.name?.charAt(0)?.toUpperCase()}
                   </div>
                 )}
+
+                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/5 to-transparent" />
+
+                <div className="absolute bottom-6 left-6 rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-black shadow-lg">
+                  Verified trainer
+                </div>
               </div>
 
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <h1 className="text-3xl font-bold text-black">{trainer.name}</h1>
-                  <BadgeCheck size={22} className="text-black" />
-                </div>
-                <p className="text-lg text-gray-600 mb-4">{trainer.specialization}</p>
+              {/* Trainer details */}
+              <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-12">
+                <div className="mb-4 flex flex-wrap items-center gap-3">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-black/40 sm:text-xs">
+                    Personal trainer
+                  </p>
 
-                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-                  {trainer.rating !== null && trainer.rating !== undefined ? (
-                    <div className="flex items-center gap-2">
-                      <StarRating rating={trainer.rating} size={16} />
-                      <span className="font-medium text-black">{trainer.rating.toFixed(1)}</span>
-                      <span>({trainer.totalReviews})</span>
-                    </div>
-                  ) : (
-                    <span className="font-medium text-black">New — no ratings yet</span>
-                  )}
-                  <div className="flex items-center gap-1.5">
-                    <MapPin size={16} />
-                    {trainer.location}
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Clock size={16} />
-                    {trainer.experience}
-                  </div>
                   {trainer.gymName && (
                     <Link
                       href={`/gyms/${trainer.gymId}`}
-                      className="flex items-center gap-1.5 hover:text-black transition-colors underline decoration-dotted"
+                      className="inline-flex items-center gap-1.5 rounded-full border border-black/10 bg-gray-50 px-3 py-1.5 text-xs font-semibold text-black/60 transition-colors hover:text-black"
                     >
-                      <Building2 size={16} />
+                      <Building2 size={14} />
                       {trainer.gymName}
                     </Link>
                   )}
                 </div>
-              </div>
-            </div>
 
-            <div className="mb-10">
-              <h2 className="text-xl font-semibold text-black mb-3">About</h2>
-              <p className="text-gray-700 leading-relaxed">{trainer.bio}</p>
-            </div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-4xl font-black tracking-tight text-black sm:text-5xl">
+                    {trainer.name}
+                  </h1>
 
-            {trainer.specialties?.length > 0 && (
-              <div className="mb-10">
-                <h2 className="text-xl font-semibold text-black mb-4">Specialties</h2>
-                <div className="flex flex-wrap gap-3">
-                  {trainer.specialties.map((s) => (
-                    <div
-                      key={s}
-                      className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-gray-50"
-                    >
-                      <CheckCircle2 size={15} className="text-black" />
-                      <span className="text-sm font-medium text-black">{s}</span>
-                    </div>
-                  ))}
+                  <BadgeCheck size={25} className="shrink-0 text-black" />
                 </div>
-              </div>
-            )}
 
-            {trainerVideos.length > 0 && (
-              <VideoSection videos={trainerVideos} hasUnlocked={hasUnlocked} />
-            )}
+                <p className="mt-3 text-lg font-medium text-black/55">
+                  {trainer.specialization}
+                </p>
 
-            <div>
-              <h2 className="text-xl font-semibold text-black mb-3">Availability</h2>
-              <div className="rounded-2xl border border-gray-200 p-5 flex items-center gap-3">
-                <Clock size={18} className="text-gray-500" />
-                <p className="text-gray-700">{trainer.availability}</p>
+                {/* Rating, location, experience */}
+                <div className="mt-7 flex flex-wrap gap-x-6 gap-y-4 border-y border-black/10 py-5 text-sm text-black/55">
+                  {trainer.rating !== null &&
+                  trainer.rating !== undefined ? (
+                    <div className="flex items-center gap-2">
+                      <StarRating rating={trainer.rating} size={17} />
+
+                      <span className="font-bold text-black">
+                        {trainer.rating.toFixed(1)}
+                      </span>
+
+                      <span>({trainer.totalReviews} reviews)</span>
+                    </div>
+                  ) : (
+                    <span className="font-semibold text-black">
+                      New trainer — no ratings yet
+                    </span>
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    <MapPin size={17} />
+                    {trainer.location}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Clock size={17} />
+                    {trainer.experience} experience
+                  </div>
+                </div>
+
+                <p className="mt-7 max-w-2xl text-sm leading-7 text-black/60 sm:text-base">
+                  {trainer.bio}
+                </p>
               </div>
             </div>
           </div>
+        </Reveal>
 
-          <div className="lg:col-span-1">
-            <div className="sticky top-8 rounded-2xl border border-gray-200 p-6 shadow-sm">
-              <p className="text-sm text-gray-500 mb-1">Starting from</p>
-              <p className="text-3xl font-bold text-black mb-6">
-                ₹{trainer.price}
-                <span className="text-base font-normal text-gray-500">/month</span>
+        {/* =====================================================
+            MAIN CONTENT + STICKY BOOKING CARD
+        ====================================================== */}
+        <div className="mt-12 grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_340px]">
+          {/* Main content */}
+          <div>
+            {/* Specialties */}
+            {trainer.specialties?.length > 0 && (
+              <Reveal>
+                <section className="mb-12">
+                  <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-black/40 sm:text-xs">
+                    Areas of focus
+                  </p>
+
+                  <h2 className="mb-5 text-2xl font-black text-black">
+                    Specialties
+                  </h2>
+
+                  <div className="flex flex-wrap gap-3">
+                    {trainer.specialties.map((specialty) => (
+                      <div
+                        key={specialty}
+                        className="flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-2.5 shadow-sm"
+                      >
+                        <CheckCircle2 size={16} className="text-black" />
+
+                        <span className="text-sm font-semibold text-black">
+                          {specialty}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </Reveal>
+            )}
+
+            {/* Video preview:
+                trainerVideos[0] = earliest uploaded approved video = free demo
+                trainerVideos[1] = second oldest approved video = locked unless access is unlocked
+            */}
+            {trainerVideos.length > 0 && (
+              <Reveal delay={100}>
+                <TrainerVideoPreview
+                  trainerId={String(trainer.id)}
+                  trainerName={trainer.name}
+                  videos={trainerVideos}
+                  hasUnlocked={hasUnlocked}
+                />
+              </Reveal>
+            )}
+
+            {/* Availability */}
+            <Reveal delay={150}>
+              <section>
+                <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-black/40 sm:text-xs">
+                  Schedule
+                </p>
+
+                <h2 className="mb-5 text-2xl font-black text-black">
+                  Availability
+                </h2>
+
+                <div className="flex items-center gap-4 rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-black text-white">
+                    <Clock size={19} />
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-bold text-black">
+                      Available for sessions
+                    </p>
+
+                    <p className="mt-1 text-sm text-black/55">
+                      {trainer.availability}
+                    </p>
+                  </div>
+                </div>
+              </section>
+            </Reveal>
+          </div>
+
+          {/* Sticky booking sidebar */}
+          <aside>
+            <div className="sticky top-24 rounded-3xl border border-black/10 bg-white p-6 shadow-sm">
+              <p className="text-sm font-medium text-black/45">
+                Starting from
               </p>
 
-              <BookingModal trainerId={String(trainer.id)} trainerName={trainer.name} />
+              <p className="mt-1 text-4xl font-black text-black">
+                ₹{trainer.price}
+                <span className="ml-1 text-base font-medium text-black/45">
+                  /month
+                </span>
+              </p>
+
+              <div className="my-6 border-t border-black/10" />
+
+              <BookingModal
+                trainerId={String(trainer.id)}
+                trainerName={trainer.name}
+              />
 
               {reviewableBooking && (
-                <RateTrainerSection booking={reviewableBooking} />
+                <div className="mt-4">
+                  <RateTrainerSection booking={reviewableBooking} />
+                </div>
               )}
 
-              <button className="w-full px-6 py-3 rounded-lg border border-gray-300 text-black font-medium hover:border-black transition-colors">
+              <button
+                type="button"
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-black px-6 py-3.5 text-sm font-bold text-black transition-all duration-300 hover:-translate-y-0.5 hover:bg-black hover:text-white"
+              >
+                <MessageCircle size={17} />
                 Message {trainer.name.split(" ")[0]}
               </button>
 
-              <div className="border-t border-gray-100 mt-6 pt-6 space-y-3 text-sm text-gray-500">
-                <div className="flex justify-between">
-                  <span>Location</span>
-                  <span className="text-black font-medium">{trainer.location}</span>
+              <div className="mt-6 space-y-3 border-t border-black/10 pt-6 text-sm">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-black/45">Location</span>
+
+                  <span className="text-right font-semibold text-black">
+                    {trainer.location}
+                  </span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Experience</span>
-                  <span className="text-black font-medium">{trainer.experience}</span>
+
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-black/45">Experience</span>
+
+                  <span className="text-right font-semibold text-black">
+                    {trainer.experience}
+                  </span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Rating</span>
-                  <span className="text-black font-medium">
-                    {trainer.rating !== null && trainer.rating !== undefined
+
+                <div className="flex items-center justify-between gap-4">
+                  <span className="text-black/45">Rating</span>
+
+                  <span className="text-right font-semibold text-black">
+                    {trainer.rating !== null &&
+                    trainer.rating !== undefined
                       ? `${trainer.rating.toFixed(1)} ★`
                       : "New"}
                   </span>
                 </div>
               </div>
             </div>
-          </div>
+          </aside>
         </div>
       </div>
     </section>

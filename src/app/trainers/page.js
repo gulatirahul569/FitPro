@@ -5,6 +5,9 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
+  ArrowRight,
+  CheckCircle2,
+  MapPin,
   Search,
   SlidersHorizontal,
   X,
@@ -24,199 +27,396 @@ const categories = [
 function TrainersContent() {
   const searchParams = useSearchParams();
 
-  const initialCategory = searchParams.get("category") || "";
-
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState(initialCategory);
+  const [category, setCategory] = useState(
+    searchParams.get("category") || ""
+  );
   const [dbTrainers, setDbTrainers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    fetch("/api/trainers/public")
-      .then((res) => res.json())
-      .then((data) => setDbTrainers(data.trainers || []))
-      .catch(() => setDbTrainers([]));
+    const loadTrainers = async () => {
+      try {
+        const response = await fetch("/api/trainers/public");
+        const data = await response.json();
+
+        setDbTrainers(data.trainers || []);
+      } catch {
+        setDbTrainers([]);
+      } finally {
+        setIsLoading(false);
+
+        requestAnimationFrame(() => {
+          setIsLoaded(true);
+        });
+      }
+    };
+
+    loadTrainers();
   }, []);
 
-  const allTrainers = useMemo(() => [...trainers, ...dbTrainers], [dbTrainers]);
+  useEffect(() => {
+    setCategory(searchParams.get("category") || "");
+  }, [searchParams]);
 
-  const filtered = useMemo(() => {
-    return allTrainers.filter((t) => {
-      const searchQuery = query.toLowerCase();
+  const allTrainers = useMemo(() => {
+    return [...trainers, ...dbTrainers];
+  }, [dbTrainers]);
 
-      const matchesQuery =
-        t.name.toLowerCase().includes(searchQuery) ||
-        t.specialization?.toLowerCase().includes(searchQuery);
+  const filteredTrainers = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    return allTrainers.filter((trainer) => {
+      const matchesSearch =
+        trainer.name?.toLowerCase().includes(normalizedQuery) ||
+        trainer.specialization?.toLowerCase().includes(normalizedQuery) ||
+        trainer.location?.toLowerCase().includes(normalizedQuery);
 
       const matchesCategory = category
-        ? t.category === category
+        ? trainer.category === category
         : true;
 
-      return matchesQuery && matchesCategory;
+      return matchesSearch && matchesCategory;
     });
   }, [allTrainers, query, category]);
 
-  const activeCategoryLabel = categories.find(
-    (c) => c.value === category
-  )?.label;
+  const activeCategoryLabel =
+    categories.find((item) => item.value === category)?.label || "All Goals";
 
-  const hasActiveFilters = query || category;
+  const hasFilters = Boolean(query || category);
+
+  const clearFilters = () => {
+    setQuery("");
+    setCategory("");
+  };
 
   return (
-    <section className="min-h-screen bg-white">
+    <section className="min-h-screen bg-gray-50 pt-20">
+      {/* =====================================================
+          TOP INTRODUCTION
+      ====================================================== */}
+      <div className="border-b border-black/10 bg-gray-50 px-6 py-12 md:px-12 md:py-12">
+        <div className="mx-auto max-w-7xl px-6">
+         
 
-      {/* Header band */}
-      <div className="border-b border-gray-100 bg-gray-50 px-6 py-14 md:px-12">
-        <div className="mx-auto max-w-7xl">
+          <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
+            {/* Image on left */}
+            <div
+              className={`relative transition-all duration-700 ${
+                isLoaded
+                  ? "translate-x-0 opacity-100"
+                  : "-translate-x-8 opacity-0"
+              }`}
+            >
+              <div className="absolute -left-4 -top-4 hidden h-full w-full rounded-3xl border border-black/10 bg-white md:block" />
 
-          <Link
-            href="/"
-            className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition-colors hover:text-black"
-          >
-            <ArrowLeft size={16} />
-            Back to Home
-          </Link>
+              <div className="relative h-[330px] overflow-hidden rounded-3xl bg-gray-200 sm:h-[400px] md:h-[570px]">
+                <img
+                  src="https://images.pexels.com/photos/13451904/pexels-photo-13451904.jpeg"
+                  alt="Personal trainer helping a client exercise"
+                  className="h-full w-full object-cover"
+                />
 
-          <div className="text-center">
-            <h1 className="mb-3 text-3xl font-bold text-black md:text-4xl">
-              Find Your Trainer
-            </h1>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/5 to-transparent" />
 
-            <p className="mx-auto max-w-lg text-gray-500">
-              Browse certified trainers by goal, specialization, and rating to
-              find the right fit for you.
-            </p>
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-white md:p-8">
+                  <p className="mb-2 text-xs font-medium uppercase tracking-[0.18em] text-white/75">
+                    Find your fit
+                  </p>
+
+                  <p className="max-w-sm text-2xl font-bold leading-tight md:text-3xl">
+                    The right coach makes every step feel possible.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Content on right */}
+            <div
+              className={`transition-all delay-100 duration-700 ${
+                isLoaded
+                  ? "translate-x-0 opacity-100"
+                  : "translate-x-8 opacity-0"
+              }`}
+            >
+              <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.22em] text-black/40 sm:text-xs">
+                Find Your Trainer
+              </p>
+
+              <h1 className="text-4xl font-black uppercase leading-[1.02] text-black sm:text-5xl md:text-6xl">
+                Train with
+                <br />
+                <span className="text-black/20">the right coach.</span>
+              </h1>
+
+              <p className="mt-6 max-w-xl text-sm leading-7 text-black/60 sm:text-base">
+                Every fitness journey is different. Explore certified trainers,
+                compare their specialties, and choose someone who understands
+                your goals, schedule, and training style.
+              </p>
+
+              {/* Simple points */}
+              <div className="mt-8 space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black text-white">
+                    <CheckCircle2 size={17} />
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-bold text-black">
+                      Choose by your goal
+                    </p>
+
+                    <p className="mt-1 text-sm leading-6 text-black/50">
+                      Find trainers for muscle building, weight loss, yoga,
+                      cardio, and more.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black text-white">
+                    <MapPin size={17} />
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-bold text-black">
+                      Find someone nearby
+                    </p>
+
+                    <p className="mt-1 text-sm leading-6 text-black/50">
+                      Search by city and connect with trainers that fit your
+                      preferred location.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black text-white">
+                    <ArrowRight size={17} />
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-bold text-black">
+                      Explore their profile
+                    </p>
+
+                    <p className="mt-1 text-sm leading-6 text-black/50">
+                      View experience, specialties, availability, reviews, and
+                      pricing before booking.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="mx-auto max-w-7xl px-6 py-12 md:px-12">
+      {/* =====================================================
+          FILTERS AND TRAINER LIST
+      ====================================================== */}
+      <div className="mx-auto max-w-7xl px-6 py-12   md:px-12 md:py-16 md:pt-8">
+        <div
+          className={`transition-all duration-700 ${
+            isLoaded
+              ? "translate-y-0 opacity-100"
+              : "translate-y-5 opacity-0"
+          }`}
+        >
+          <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-black/40 sm:text-xs">
+                Explore trainers
+              </p>
 
-        {/* Search + filter bar */}
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row">
-
-          {/* Search */}
-          <div className="relative flex-1">
-            <Search
-              size={18}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-            />
-
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by name or specialization..."
-              className="w-full rounded-xl border border-gray-200 py-3.5 pl-11 pr-4 transition-all focus:border-black focus:outline-none focus:ring-2 focus:ring-black/10"
-            />
-          </div>
-
-          {/* Category */}
-          <div className="relative">
-            <SlidersHorizontal
-              size={16}
-              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-            />
-
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="min-w-[180px] cursor-pointer appearance-none rounded-xl border border-gray-200 bg-white py-3.5 pl-10 pr-10 transition-all focus:border-black focus:outline-none focus:ring-2 focus:ring-black/10"
-            >
-              {categories.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-        </div>
-
-        {/* Active filters + result count */}
-        <div className="mb-8 flex flex-wrap items-center gap-3">
-
-          <p className="text-sm text-gray-500">
-            <span className="font-semibold text-black">
-              {filtered.length}
-            </span>{" "}
-            trainer{filtered.length !== 1 && "s"} found
-          </p>
-
-          {hasActiveFilters && (
-            <>
-              {/* Search filter */}
-              {query && (
-                <button
-                  onClick={() => setQuery("")}
-                  className="flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-black transition-colors hover:bg-gray-200"
-                >
-                  "{query}"
-                  <X size={12} />
-                </button>
-              )}
-
-              {/* Category filter */}
-              {category && (
-                <button
-                  onClick={() => setCategory("")}
-                  className="flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-black transition-colors hover:bg-gray-200"
-                >
-                  {activeCategoryLabel}
-                  <X size={12} />
-                </button>
-              )}
-            </>
-          )}
-
-        </div>
-
-        {/* Results */}
-        {filtered.length > 0 ? (
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-
-            {filtered.map((trainer) => (
-              <TrainerCard
-                key={trainer.id}
-                trainer={trainer}
-              />
-            ))}
-
-          </div>
-        ) : (
-
-          /* Empty state */
-          <div className="py-24 text-center">
-
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
-              <Search
-                size={22}
-                className="text-gray-400"
-              />
+              <h2 className="text-3xl font-black text-black">
+                Find your match.
+              </h2>
             </div>
 
-            <p className="mb-1 font-medium text-gray-700">
-              No trainers found
-            </p>
+            {!isLoading && (
+              <p className="text-sm text-black/50">
+                <span className="font-bold text-black">
+                  {filteredTrainers.length}
+                </span>{" "}
+                trainer{filteredTrainers.length !== 1 && "s"} available
+              </p>
+            )}
+          </div>
 
-            <p className="mb-6 text-sm text-gray-500">
-              Try a different search term or category.
+          {/* Filter panel */}
+          <div className="rounded-3xl border border-black/10 bg-gray-50 p-4 sm:p-5">
+            <div className="flex flex-col gap-3 lg:flex-row">
+              {/* Search */}
+              <div className="relative flex-1">
+                <Search
+                  size={19}
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-black/35"
+                />
+
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Search by name, specialization, or location..."
+                  className="w-full rounded-2xl border border-black/10 bg-white py-3.5 pl-12 pr-11 text-sm text-black outline-none transition-all duration-300 placeholder:text-black/35 focus:border-black focus:ring-4 focus:ring-black/5"
+                />
+
+                {query && (
+                  <button
+                    type="button"
+                    onClick={() => setQuery("")}
+                    aria-label="Clear search"
+                    className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-black/40 transition-colors hover:bg-black hover:text-white"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+
+              {/* Select filter */}
+              <div className="relative min-w-full sm:min-w-[240px] lg:min-w-[260px]">
+                <SlidersHorizontal
+                  size={17}
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-black/35"
+                />
+
+                <select
+                  value={category}
+                  onChange={(event) => setCategory(event.target.value)}
+                  className="w-full cursor-pointer appearance-none rounded-2xl border border-black/10 bg-white py-3.5 pl-11 pr-10 text-sm font-medium text-black outline-none transition-all duration-300 focus:border-black focus:ring-4 focus:ring-black/5"
+                >
+                  {categories.map((item) => (
+                    <option key={item.value} value={item.value}>
+                      {item.label}
+                    </option>
+                  ))}
+                </select>
+
+                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-black/40">
+                  ▼
+                </span>
+              </div>
+            </div>
+
+            {/* Goal chips */}
+            <div className="mt-4 flex flex-wrap justify-center gap-5 border-t border-black/5 pt-4">
+              {categories.map((item) => (
+                <button
+                  key={item.value || "all-goals"}
+                  type="button"
+                  onClick={() => setCategory(item.value)}
+                  className={`rounded-full px-4 py-2 text-xs font-semibold transition-all duration-300 ${
+                    category === item.value
+                      ? "bg-black text-white shadow-sm"
+                      : "border border-black/10 bg-white text-black/55 hover:-translate-y-0.5 hover:border-black/25 hover:text-black"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Active filter details */}
+          {hasFilters && (
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <p className="text-sm text-black/50">Active filters:</p>
+
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  className="flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-black transition-colors hover:bg-gray-200"
+                >
+                  Search: {query}
+                  <X size={13} />
+                </button>
+              )}
+
+              {category && (
+                <button
+                  type="button"
+                  onClick={() => setCategory("")}
+                  className="flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-black transition-colors hover:bg-gray-200"
+                >
+                  {activeCategoryLabel}
+                  <X size={13} />
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="text-xs font-bold text-black/55 underline underline-offset-4 transition-colors hover:text-black"
+              >
+                Clear all
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Trainer cards */}
+        {isLoading ? (
+          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((item) => (
+              <div
+                key={item}
+                className="overflow-hidden rounded-3xl border border-black/5 bg-white"
+              >
+                <div className="h-64 animate-pulse bg-gray-100" />
+
+                <div className="space-y-3 p-5">
+                  <div className="h-5 w-2/3 animate-pulse rounded bg-gray-100" />
+                  <div className="h-4 w-1/2 animate-pulse rounded bg-gray-100" />
+                  <div className="h-4 w-full animate-pulse rounded bg-gray-100" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredTrainers.length > 0 ? (
+          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {filteredTrainers.map((trainer, index) => (
+              <div
+                key={trainer.id}
+                className={`transition-all duration-700 ${
+                  isLoaded
+                    ? "translate-y-0 opacity-100"
+                    : "translate-y-8 opacity-0"
+                }`}
+                style={{
+                  transitionDelay: `${Math.min(index * 80, 480)}ms`,
+                }}
+              >
+                <TrainerCard trainer={trainer} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-10 rounded-3xl border border-dashed border-black/15 bg-gray-50 px-6 py-20 text-center">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm">
+              <Search size={25} className="text-black/50" />
+            </div>
+
+            <h2 className="mt-5 text-xl font-black text-black">
+              No trainers found
+            </h2>
+
+            <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-black/50">
+              Try another name, specialization, location, or fitness goal.
             </p>
 
             <button
-              onClick={() => {
-                setQuery("");
-                setCategory("");
-              }}
-              className="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-medium text-black transition-colors hover:border-black"
+              type="button"
+              onClick={clearFilters}
+              className="mt-6 rounded-full bg-black px-6 py-3 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-gray-800 hover:shadow-lg"
             >
-              Clear all filters
+              Show all trainers
             </button>
-
           </div>
         )}
-
       </div>
     </section>
   );
@@ -227,9 +427,11 @@ export default function TrainersPage() {
     <Suspense
       fallback={
         <section className="flex min-h-screen items-center justify-center bg-white">
-          <p className="text-sm text-gray-500">
-            Loading trainers...
-          </p>
+          <div className="flex flex-col items-center gap-4">
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-black/10 border-t-black" />
+
+            <p className="text-sm text-black/50">Loading trainers...</p>
+          </div>
         </section>
       }
     >

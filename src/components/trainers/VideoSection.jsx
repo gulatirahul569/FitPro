@@ -1,77 +1,102 @@
-import Link from "next/link";
-import { videos } from "@/data/videos";
-import VideoCard from "@/components/videos/VideoCard";
-import Reveal from "@/components/ui/Reveal";
+"use client";
 
-export default function VideoSection() {
-  const desktopList = videos.slice(0, 8);
-  const mobileList = videos.slice(0, 4);
+import { useState } from "react";
+import { Play, Lock } from "lucide-react";
+
+export default function VideoSection({ videos, hasUnlocked }) {
+  const demoVideo = videos.find((v) => v.isDemo);
+  const lockedVideos = videos.filter((v) => !v.isDemo);
+  const [playingDemo, setPlayingDemo] = useState(false);
 
   return (
-    <section className="bg-gray-50 py-20">
-      <div className="mx-auto max-w-7xl px-6 md:px-12">
-        <Reveal>
-          <h2 className="mb-2 text-center text-3xl font-bold text-black md:text-4xl">
-            Explore Fitness Videos
-          </h2>
+    <div className="mb-10">
+      <h2 className="text-xl font-semibold text-black mb-4">Videos</h2>
 
-          <p className="mb-12 text-center text-gray-500">
-            Free workouts uploaded by our certified trainers
-          </p>
-        </Reveal>
-      </div>
-
-      {/* Desktop marquee */}
-      <div className="hidden md:block">
-        <div className="video-marquee-wrap">
-          <div className="video-marquee-track">
-            <div className="video-marquee-group">
-              {desktopList.map((video) => (
-                <div key={`first-${video.id}`} className="w-80 flex-shrink-0">
-                  <VideoCard video={video} />
+      {demoVideo && (
+        <div className="relative h-56 rounded-2xl overflow-hidden bg-black mb-4">
+          {playingDemo ? (
+            <video
+              src={demoVideo.videoUrl}
+              controls
+              autoPlay
+              className="h-full w-full object-contain bg-black"
+            />
+          ) : (
+            <button
+              onClick={() => setPlayingDemo(true)}
+              className="absolute inset-0 w-full h-full"
+            >
+              {demoVideo.thumbnail ? (
+                <img
+                  src={demoVideo.thumbnail}
+                  alt={demoVideo.title}
+                  className="h-full w-full object-cover opacity-70"
+                />
+              ) : null}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center hover:scale-110 transition-transform">
+                  <Play size={24} className="text-black ml-1" fill="black" />
                 </div>
-              ))}
-            </div>
+              </div>
+              <span className="absolute top-3 left-3 text-xs font-semibold px-2 py-1 rounded-full bg-black text-white">
+                Free Demo
+              </span>
+              <p className="absolute bottom-3 left-3 text-white text-sm font-medium">
+                {demoVideo.title}
+              </p>
+            </button>
+          )}
+        </div>
+      )}
 
-            <div className="video-marquee-group" aria-hidden="true">
-              {desktopList.map((video) => (
-                <div key={`second-${video.id}`} className="w-80 flex-shrink-0">
-                  <VideoCard video={video} />
+      {lockedVideos.length > 0 && (
+        <LockedVideosGrid videos={lockedVideos} hasUnlocked={hasUnlocked} />
+      )}
+    </div>
+  );
+}
+
+function LockedVideosGrid({ videos, hasUnlocked }) {
+  const [playingId, setPlayingId] = useState(null);
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      {videos.map((video) => (
+        <div key={video._id} className="relative h-32 rounded-xl overflow-hidden bg-gray-200">
+          {hasUnlocked && playingId === video._id ? (
+            <video src={video.videoUrl} controls autoPlay className="h-full w-full object-cover" />
+          ) : (
+            <button
+              onClick={() => hasUnlocked && setPlayingId(video._id)}
+              disabled={!hasUnlocked}
+              className="absolute inset-0 w-full h-full"
+            >
+              {video.thumbnail ? (
+                <img
+                  src={video.thumbnail}
+                  alt={video.title}
+                  className={`h-full w-full object-cover ${!hasUnlocked ? "blur-sm scale-105" : ""}`}
+                />
+              ) : (
+                <div className="h-full w-full bg-gray-300" />
+              )}
+
+              {hasUnlocked ? (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                  <Play size={22} className="text-white" fill="white" />
                 </div>
-              ))}
-            </div>
-          </div>
+              ) : (
+                <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-1 text-center px-2">
+                  <Lock size={18} className="text-white" />
+                  <p className="text-white text-[10px] font-medium leading-tight">
+                    Book a session to unlock
+                  </p>
+                </div>
+              )}
+            </button>
+          )}
         </div>
-
-        <div className="mt-12 flex justify-center">
-          <Link
-            href="/videos"
-            className="inline-flex items-center gap-2 rounded-full border border-black px-6 py-3 font-medium text-black transition-all duration-300 hover:-translate-y-1 hover:bg-black hover:text-white hover:shadow-lg"
-          >
-            Explore All Videos
-          </Link>
-        </div>
-      </div>
-
-      {/* Mobile grid */}
-      <div className="px-6 md:hidden">
-        <div className="grid grid-cols-2 gap-4">
-          {mobileList.map((video, index) => (
-            <Reveal key={video.id} delay={index * 100}>
-              <VideoCard video={video} />
-            </Reveal>
-          ))}
-        </div>
-
-        <div className="mt-10 flex justify-center">
-          <Link
-            href="/videos"
-            className="inline-flex rounded-full border border-black px-6 py-3 text-sm font-medium text-black transition-all duration-300 hover:-translate-y-1 hover:bg-black hover:text-white hover:shadow-lg"
-          >
-            Explore All Videos
-          </Link>
-        </div>
-      </div>
-    </section>
+      ))}
+    </div>
   );
 }

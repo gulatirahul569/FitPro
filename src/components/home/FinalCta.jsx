@@ -5,7 +5,7 @@ import Reveal from "@/components/ui/Reveal";
 export default function FinalCta() {
   return (
     <section className="bg-gray-50 px-6 py-20 md:px-12 md:py-24">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 md:grid-cols-2 md:gap-16">
+      <div className="mx-auto grid max-w-7xl px-8 grid-cols-1 items-center gap-12 md:grid-cols-2 md:gap-16">
         {/* ================= CONTENT / LEFT ================= */}
         <Reveal>
           <div className="flex flex-col items-start">
@@ -47,7 +47,7 @@ export default function FinalCta() {
             {/* Light offset frame */}
             <div className="absolute -right-4 -top-4 h-full w-full rounded-3xl border border-black/10 bg-gray-50 sm:-right-5 sm:-top-5" />
 
-            <div className="relative h-[350px] w-full overflow-hidden rounded-3xl bg-gray-200 sm:h-[420px] md:h-[460px]">
+            <div className="relative h-[350px] w-full overflow-hidden rounded-3xl bg-gray-200 sm:h-[420px] md:h-[510px]">
               <img
                 src="https://images.pexels.com/photos/1552106/pexels-photo-1552106.jpeg"
                 alt="Person exercising in a fitness gym"

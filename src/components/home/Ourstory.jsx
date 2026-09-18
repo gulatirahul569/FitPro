@@ -3,8 +3,11 @@ import Reveal from "@/components/ui/Reveal";
 
 export default function OurStory() {
   return (
-    <section className="bg-gray-50 px-6 py-20 md:px-12 md:py-8">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 md:grid-cols-2 md:gap-16">
+    <section
+      id="our-story"
+      className="bg-gray-50 px-6 py-20 md:px-12 md:py-8 scroll-mt-24"
+    >
+      <div className="mx-auto grid max-w-7xl px-10 grid-cols-1 items-center gap-12 md:grid-cols-2 md:gap-16">
         {/* ================= VISUAL ================= */}
         <Reveal>
           <div className="relative mb-10 md:mb-0">
@@ -14,10 +17,10 @@ export default function OurStory() {
                 alt="Trainer coaching a client"
                 className="h-full w-full object-cover"
               />
+
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
             </div>
 
-            {/* Floating stat card */}
             <div className="absolute -bottom-6 left-6 right-6 flex items-center gap-4 rounded-2xl border border-black/5 bg-white p-5 shadow-xl sm:left-8 sm:right-auto sm:w-64">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-black text-white">
                 <Users size={20} />
@@ -51,15 +54,15 @@ export default function OurStory() {
               </p>
 
               <p>
-                Instead of searching through different platforms for
-                trainers, workouts and fitness resources, FitPro brings the
-                experience together.
+                Instead of searching through different platforms for trainers,
+                workouts and fitness resources, FitPro brings the experience
+                together.
               </p>
 
               <p>
-                Users can discover trainers and fitness content, while
-                trainers can build their professional presence, manage
-                clients and grow their fitness business.
+                Users can discover trainers and fitness content, while trainers
+                can build their professional presence, manage clients and grow
+                their fitness business.
               </p>
             </div>
 

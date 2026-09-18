@@ -104,21 +104,21 @@ export default function Hero() {
 
           {/* Trust points */}
           <div
-            className="animate-fade-up mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm text-black/60"
+            className="animate-fade-up mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white"
             style={{ animationDelay: "0.7s" }}
           >
             <div className="flex items-center gap-2">
-              <CheckCircle2 size={17} className="text-black" />
+              <CheckCircle2 size={17} className="text-white" />
               Certified Trainers
             </div>
 
             <div className="flex items-center gap-2">
-              <CheckCircle2 size={17} className="text-black" />
+              <CheckCircle2 size={17} className="text-white" />
               Personalized Plans
             </div>
 
             <div className="flex items-center gap-2">
-              <CheckCircle2 size={17} className="text-black" />
+              <CheckCircle2 size={17} className="text-white" />
               Flexible Training
             </div>
           </div>
