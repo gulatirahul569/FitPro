@@ -53,13 +53,13 @@ function FacebookIcon({ size = 24, ...props }) {
 const platformLinks = [
   { href: "/trainers", label: "Find Trainers" },
   { href: "/videos", label: "Fitness Videos" },
-  { href: "/", label: "Training Programs" },
+  { href: "/gyms", label: "Partner Gyms" },
 ];
 
 const companyLinks = [
-  { href: "/", label: "About FitPro" },
-  { href: "/", label: "Contact Us" },
-  { href: "/", label: "Frequently Asked Questions" },
+  { href: "/#our-story", label: "About FitPro" },
+  { href: "/contact", label: "Contact Us" },
+  { href: "/faq", label: "Frequently Asked Questions" },
 ];
 
 const socialLinks = [
@@ -190,21 +190,21 @@ export default function Footer() {
 
           <div className="flex flex-wrap justify-center gap-x-5 gap-y-2">
             <Link
-              href="/"
+              href="/privacy"
               className="transition-colors duration-200 hover:text-white"
             >
               Privacy
             </Link>
 
             <Link
-              href="/"
+              href="/terms"
               className="transition-colors duration-200 hover:text-white"
             >
               Terms
             </Link>
 
             <Link
-              href="/"
+              href="/cookies"
               className="transition-colors duration-200 hover:text-white"
             >
               Cookies
