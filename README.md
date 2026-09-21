@@ -164,8 +164,3 @@ Contributions, issues, and feature requests are welcome!
 **Rahul Gulati**
 GitHub: [@gulatirahul569](https://github.com/gulatirahul569)
 
----
-
-## 📄 License
-
-This project is currently unlicensed. Add a `LICENSE` file (for example, [MIT](https://choosealicense.com/licenses/mit/)) to specify how others may use it.
