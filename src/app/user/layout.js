@@ -11,14 +11,15 @@ import {
   ArrowLeft,
   Menu,
   X,
+  PlayCircle, // add this
 } from "lucide-react";
 import { useState } from "react";
-
 const navItems = [
   { href: "/user/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/user/profile", label: "My Profile", icon: User },
   { href: "/user/bookings", label: "My Bookings", icon: Calendar },
   { href: "/user/training", label: "My Training", icon: Dumbbell },
+  { href: "/user/videos", label: "Session Videos", icon: PlayCircle }, // new
   { href: "/user/settings", label: "Settings", icon: Settings },
 ];
 

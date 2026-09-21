@@ -229,3 +229,7 @@ export async function reapplyToGym(userId) {
 
   return result;
 }
+
+export function trainerOwnsProfile(userId, profileUserId) {
+  return String(userId) === String(profileUserId);
+}

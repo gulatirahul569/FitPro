@@ -8,7 +8,7 @@ import {
   Video,
 } from "lucide-react";
 
-import { getTrainerProfile } from "@/lib/models/trainerProfile";
+import { getTrainerProfile, trainerOwnsProfile } from "@/lib/models/trainerProfile";
 import { getVideosByTrainer } from "@/lib/models/video";
 import { hasUnlockedTrainerVideos } from "@/lib/models/booking";
 import { auth } from "@/auth";
@@ -27,11 +27,8 @@ export default async function TrainerVideosPage({ params }) {
   const allVideos = await getVideosByTrainer(id);
 
   /*
-    Important:
     Filter approved videos, then sort oldest -> newest.
-
-    videos[0] is now the earliest uploaded approved video
-    and will always become the free Demo Video.
+    videos[0] = earliest approved upload = free demo.
   */
   const videos = allVideos
     .filter((video) => video.status === "approved")
@@ -51,9 +48,21 @@ export default async function TrainerVideosPage({ params }) {
       _id: video._id.toString(),
     }));
 
-  const hasUnlocked = session?.user
-    ? await hasUnlockedTrainerVideos(session.user.id, id)
-    : false;
+  // Access logic
+  let hasUnlocked = false;
+  let canPreviewAllVideos = false;
+
+  if (session?.user) {
+    hasUnlocked = await hasUnlockedTrainerVideos(session.user.id, id);
+
+    const isAdmin = session.user.role === "admin";
+
+    const isTrainerOwner =
+      session.user.role === "trainer" &&
+      trainerOwnsProfile(session.user.id, id);
+
+    canPreviewAllVideos = isAdmin || isTrainerOwner;
+  }
 
   return (
     <section className="min-h-screen bg-gray-50 pt-24">
@@ -102,7 +111,7 @@ export default async function TrainerVideosPage({ params }) {
         ) : (
           <>
             {/* Information banner */}
-            {!hasUnlocked && (
+            {!hasUnlocked && !canPreviewAllVideos && (
               <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-black/10 bg-white p-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-sm font-bold text-black">
@@ -132,12 +141,9 @@ export default async function TrainerVideosPage({ params }) {
             {/* Videos */}
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {videos.map((video, index) => {
-                /*
-                  Because `videos` is oldest -> newest:
-                  index 0 = trainer's first approved upload = free demo.
-                */
                 const isDemo = index === 0;
-                const isLocked = !isDemo && !hasUnlocked;
+                const isAccessible = isDemo || hasUnlocked || canPreviewAllVideos;
+                const isLocked = !isAccessible;
                 const videoId = video._id || video.id;
 
                 const content = (
@@ -232,7 +238,7 @@ export default async function TrainerVideosPage({ params }) {
                       <p className="mt-2 text-sm text-black/50">
                         {isDemo
                           ? "Free introduction video"
-                          : hasUnlocked
+                          : isAccessible
                           ? "Training video unlocked"
                           : "Unlock this video after booking"}
                       </p>

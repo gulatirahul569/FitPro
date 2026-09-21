@@ -6,6 +6,7 @@ export default function TrainerVideoPreview({
   trainerName,
   videos,
   hasUnlocked,
+  canPreviewAllVideos = false,
 }) {
   const previewVideos = videos.slice(0, 2);
 
@@ -42,7 +43,10 @@ export default function TrainerVideoPreview({
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         {previewVideos.map((video, index) => {
           const isDemo = index === 0;
-          const isLocked = !isDemo && !hasUnlocked;
+
+          // Trainer/admin can preview everything
+          const isAccessible = isDemo || hasUnlocked || canPreviewAllVideos;
+          const isLocked = !isAccessible;
 
           const cardContent = (
             <article
@@ -58,7 +62,9 @@ export default function TrainerVideoPreview({
                     src={video.thumbnail}
                     alt={video.title}
                     className={`h-full w-full object-cover transition-transform duration-500 ${
-                      isLocked ? "scale-105 blur-[2px]" : "group-hover:scale-105"
+                      isLocked
+                        ? "scale-105 blur-[2px]"
+                        : "group-hover:scale-105"
                     }`}
                   />
                 ) : (
@@ -117,7 +123,7 @@ export default function TrainerVideoPreview({
                 <p className="mt-1 text-sm text-black/50">
                   {isDemo
                     ? "Watch this free introduction"
-                    : hasUnlocked
+                    : isAccessible
                     ? "Included with your training access"
                     : "Available after booking"}
                 </p>

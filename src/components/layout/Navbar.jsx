@@ -15,6 +15,7 @@ import {
   LogOut,
   LayoutDashboard,
   ShieldCheck,
+  PlayCircle,
   Building2,
   ChevronDown,
 } from "lucide-react";
@@ -265,6 +266,12 @@ export default function Navbar() {
                               href="/user/training"
                               icon={BookOpen}
                               label="My Training"
+                              onClick={() => setProfileMenu(false)}
+                            />
+                            <ProfileMenuItem
+                              href="/user/videos"
+                              icon={PlayCircle}
+                              label="Session Videos"
                               onClick={() => setProfileMenu(false)}
                             />
 

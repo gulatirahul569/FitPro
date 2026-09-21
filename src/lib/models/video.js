@@ -11,6 +11,7 @@ import { ObjectId } from "mongodb";
 //   videoUrl: string,
 //   thumbnail: string,
 //   isDemo: boolean,   // only one true per trainer at a time
+//   status: "pending" | "approved" | "rejected",
 //   createdAt: Date,
 //   updatedAt: Date,
 // }
@@ -52,6 +53,7 @@ export async function createVideo(data) {
 
   return db.collection("trainerVideos").findOne({ _id: result.insertedId });
 }
+
 export async function setAsDemo(videoId, trainerId) {
   if (!ObjectId.isValid(videoId)) return null;
   const db = await getDb();
@@ -126,11 +128,18 @@ export async function reviewVideo(videoId, decision, adminId, adminNote = "") {
 export async function getApprovedVideoById(id) {
   if (!ObjectId.isValid(id)) return null;
   const db = await getDb();
-  return db.collection("trainerVideos").findOne({ _id: new ObjectId(id), status: "approved" });
+  return db
+    .collection("trainerVideos")
+    .findOne({ _id: new ObjectId(id), status: "approved" });
 }
+
 export async function getVideosGroupedByTrainer() {
   const db = await getDb();
-  const videos = await db.collection("trainerVideos").find({}).sort({ createdAt: -1 }).toArray();
+  const videos = await db
+    .collection("trainerVideos")
+    .find({})
+    .sort({ createdAt: -1 })
+    .toArray();
 
   const grouped = new Map();
 
@@ -164,4 +173,17 @@ export async function getVideosGroupedByTrainer() {
       location: profile?.location || "",
     };
   });
+}
+
+// NEW: Check if a trainer (user) owns this video
+export async function trainerOwnsVideo(trainerId, videoId) {
+  if (!ObjectId.isValid(videoId)) return false;
+  const db = await getDb();
+
+  const video = await db.collection("trainerVideos").findOne({
+    _id: new ObjectId(videoId),
+    trainerId,
+  });
+
+  return !!video;
 }

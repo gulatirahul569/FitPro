@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { trainerOwnsProfile } from "@/lib/models/trainerProfile";
 import {
   ArrowLeft,
   MapPin,
@@ -85,24 +86,45 @@ export default async function TrainerProfilePage({ params }) {
 
   const session = await auth();
 
+  let canPreviewAllVideos = false;
+
+  if (session?.user) {
+    const isAdmin = session.user.role === "admin";
+
+    const isTrainerOwner =
+      session.user.role === "trainer" &&
+      trainerOwnsProfile(session.user.id, String(trainer.id));
+
+    canPreviewAllVideos = isAdmin || isTrainerOwner;
+  }
+
   /*
     Numeric URL IDs are mock trainers.
     Non-numeric IDs are database trainers.
   */
   const isMockTrainer = !Number.isNaN(Number(id));
 
-  let reviewableBooking = null;
+let reviewableBooking = null;
 
-  if (
-    session?.user &&
-    !isMockTrainer &&
-    session.user.id !== String(trainer.id)
-  ) {
-    reviewableBooking = await getReviewableBooking(
-      session.user.id,
-      String(trainer.id)
-    );
+if (
+  session?.user &&
+  !isMockTrainer &&
+  session.user.id !== String(trainer.id)
+) {
+  const rawBooking = await getReviewableBooking(
+    session.user.id,
+    String(trainer.id)
+  );
+
+  if (rawBooking) {
+    reviewableBooking = {
+      ...rawBooking,
+      _id: rawBooking._id?.toString?.() || rawBooking._id,
+      createdAt: rawBooking.createdAt?.toISOString?.() || rawBooking.createdAt,
+      updatedAt: rawBooking.updatedAt?.toISOString?.() || rawBooking.updatedAt,
+    };
   }
+}
 
   let trainerVideos = [];
   let hasUnlocked = false;
@@ -214,7 +236,7 @@ export default async function TrainerProfilePage({ params }) {
                 {/* Rating, location, experience */}
                 <div className="mt-7 flex flex-wrap gap-x-6 gap-y-4 border-y border-black/10 py-5 text-sm text-black/55">
                   {trainer.rating !== null &&
-                  trainer.rating !== undefined ? (
+                    trainer.rating !== undefined ? (
                     <div className="flex items-center gap-2">
                       <StarRating rating={trainer.rating} size={17} />
 
@@ -296,6 +318,7 @@ export default async function TrainerProfilePage({ params }) {
                   trainerName={trainer.name}
                   videos={trainerVideos}
                   hasUnlocked={hasUnlocked}
+                  canPreviewAllVideos={canPreviewAllVideos}
                 />
               </Reveal>
             )}
@@ -387,7 +410,7 @@ export default async function TrainerProfilePage({ params }) {
 
                   <span className="text-right font-semibold text-black">
                     {trainer.rating !== null &&
-                    trainer.rating !== undefined
+                      trainer.rating !== undefined
                       ? `${trainer.rating.toFixed(1)} ★`
                       : "New"}
                   </span>

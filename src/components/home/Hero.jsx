@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -30,16 +31,14 @@ export default function Hero() {
 
         {/* Bright overlay */}
         <div className="absolute inset-0 bg-white/2" />
-
-        
       </div>
 
       {/* ================= HERO CONTENT ================= */}
-      <div className="relative mx-auto flex min-h-fit max-w-7xl items-center px-6 py-10 sm:min-h-[calc(100vh-80px)] sm:py-16 lg:px-8 lg:py-20">
+      <div className="relative mx-auto flex max-w-7xl items-center px-5 py-8 sm:px-6 sm:py-16 lg:min-h-[calc(100vh-80px)] lg:px-8 lg:py-20">
         <div className="w-full max-w-2xl">
           {/* Badge */}
           <div
-            className="animate-fade-up mb-6 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-4 py-2 text-sm font-medium text-black shadow-sm backdrop-blur-md"
+            className="animate-fade-up mb-5 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-3.5 py-2 text-xs font-medium text-black shadow-sm backdrop-blur-md sm:mb-6 sm:px-4 sm:text-sm"
             style={{ animationDelay: "0.1s" }}
           >
             <span className="relative flex h-2 w-2">
@@ -52,7 +51,7 @@ export default function Hero() {
 
           {/* Heading */}
           <h1
-            className="animate-fade-up text-5xl font-black leading-[0.95] tracking-[-0.04em] text-black sm:text-6xl lg:text-7xl xl:text-[82px]"
+            className="animate-fade-up text-[42px] font-black leading-[0.94] tracking-[-0.045em] text-black xs:text-[46px] sm:text-6xl md:text-7xl lg:text-7xl xl:text-[82px]"
             style={{ animationDelay: "0.25s" }}
           >
             TRANSFORM
@@ -66,7 +65,7 @@ export default function Hero() {
 
           {/* Description */}
           <p
-            className="animate-fade-up mt-7 max-w-xl text-base leading-7 text-black/60 sm:text-lg"
+            className="animate-fade-up mt-5 max-w-xl text-sm leading-6 text-black/60 sm:mt-7 sm:text-lg sm:leading-7"
             style={{ animationDelay: "0.4s" }}
           >
             Train with certified trainers, follow personalized programs, and
@@ -75,12 +74,12 @@ export default function Hero() {
 
           {/* Buttons */}
           <div
-            className="animate-fade-up mt-9 flex flex-col gap-3 sm:flex-row"
+            className="animate-fade-up mt-7 flex flex-col gap-3 sm:mt-9 sm:flex-row"
             style={{ animationDelay: "0.55s" }}
           >
             <Link
               href="/trainers"
-              className="group inline-flex items-center justify-center gap-3 rounded-full bg-black px-7 py-4 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-gray-800 hover:shadow-xl"
+              className="group inline-flex w-full items-center justify-center gap-3 rounded-full bg-black px-6 py-3.5 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-gray-800 hover:shadow-xl active:scale-[0.98] sm:w-auto sm:px-7 sm:py-4"
             >
               Find Your Trainer
 
@@ -92,7 +91,7 @@ export default function Hero() {
 
             <Link
               href="/videos"
-              className="inline-flex items-center justify-center gap-3 rounded-full border border-black/15 bg-white/75 px-7 py-4 text-sm font-bold text-black backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-black hover:bg-black hover:text-white hover:shadow-lg"
+              className="inline-flex w-full items-center justify-center gap-3 rounded-full border border-black/15 bg-white/75 px-6 py-3.5 text-sm font-bold text-black backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-black hover:bg-black hover:text-white hover:shadow-lg active:scale-[0.98] sm:w-auto sm:px-7 sm:py-4"
             >
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-black text-white">
                 <Play size={12} fill="currentColor" />
@@ -104,37 +103,40 @@ export default function Hero() {
 
           {/* Trust points */}
           <div
-            className="animate-fade-up mt-10 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white"
+            className="animate-fade-up mt-8 flex flex-col gap-3 text-sm text-white sm:mt-10 sm:flex-row sm:flex-wrap sm:gap-x-6 sm:gap-y-3"
             style={{ animationDelay: "0.7s" }}
           >
             <div className="flex items-center gap-2">
-              <CheckCircle2 size={17} className="text-white" />
+              <CheckCircle2 size={17} className="shrink-0 text-white" />
               Certified Trainers
             </div>
 
             <div className="flex items-center gap-2">
-              <CheckCircle2 size={17} className="text-white" />
+              <CheckCircle2 size={17} className="shrink-0 text-white" />
               Personalized Plans
             </div>
 
             <div className="flex items-center gap-2">
-              <CheckCircle2 size={17} className="text-white" />
+              <CheckCircle2 size={17} className="shrink-0 text-white" />
               Flexible Training
             </div>
           </div>
 
           {/* Mobile stats */}
-          <div className="mt-10 grid grid-cols-2 gap-3 sm:hidden">
-            <div className="min-w-0 rounded-2xl border border-black/10 bg-white/80 p-4 shadow-sm backdrop-blur-md">
-              <p className="text-xs uppercase tracking-wider text-black/45">
+          <div
+            className="mt-8 grid grid-cols-2 gap-3 animate-fade-up sm:hidden"
+            style={{ animationDelay: "0.85s" }}
+          >
+            <div className="min-w-0 rounded-2xl border border-black/10 bg-white/80 p-4 shadow-sm backdrop-blur-md transition-transform duration-300 hover:-translate-y-1">
+              <p className="text-[10px] uppercase tracking-wider text-black/45">
                 Community
               </p>
 
               <p className="mt-1 text-2xl font-black text-black">10K+</p>
             </div>
 
-            <div className="min-w-0 rounded-2xl border border-black/10 bg-white/80 p-4 shadow-sm backdrop-blur-md">
-              <p className="text-xs uppercase tracking-wider text-black/45">
+            <div className="min-w-0 rounded-2xl border border-black/10 bg-white/80 p-4 shadow-sm backdrop-blur-md transition-transform duration-300 hover:-translate-y-1">
+              <p className="text-[10px] uppercase tracking-wider text-black/45">
                 Rating
               </p>
 
@@ -152,6 +154,9 @@ export default function Hero() {
           <ChevronDown size={18} />
         </div>
       </div>
+
+      {/* Mobile animation */}
+      <div className="pointer-events-none absolute -bottom-24 -left-24 h-64 w-64 animate-pulse rounded-full bg-white/10 blur-3xl sm:hidden" />
     </section>
   );
 }

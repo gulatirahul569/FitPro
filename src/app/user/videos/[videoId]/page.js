@@ -11,12 +11,7 @@ import {
   UserRound,
 } from "lucide-react";
 
-import { videos as mockVideos } from "@/data/videos";
-import {
-  getApprovedVideoById,
-  getVideosByTrainer,
-  trainerOwnsVideo,
-} from "@/lib/models/video";
+import { getApprovedVideoById } from "@/lib/models/video";
 import { hasUnlockedTrainerVideos } from "@/lib/models/booking";
 import { auth } from "@/auth";
 
@@ -24,33 +19,6 @@ import VideoPlayer from "./VideoPlayer";
 import Reveal from "@/components/ui/Reveal";
 
 async function getVideo(id) {
-  const numericId = Number(id);
-
-  /*
-    Mock videos remain available to everyone.
-  */
-  if (!Number.isNaN(numericId)) {
-    const mockVideo = mockVideos.find((video) => video.id === numericId);
-
-    if (!mockVideo) {
-      return null;
-    }
-
-    return {
-      id: mockVideo.id,
-      title: mockVideo.title,
-      trainer: mockVideo.trainer,
-      trainerId: mockVideo.trainerId || null,
-      thumbnail: mockVideo.thumbnail,
-      videoUrl: mockVideo.videoUrl,
-      description: mockVideo.description,
-      rating: mockVideo.rating || 5,
-      duration: mockVideo.duration || "—",
-      views: mockVideo.views || "New",
-      isMockVideo: true,
-    };
-  }
-
   const databaseVideo = await getApprovedVideoById(id);
 
   if (!databaseVideo) {
@@ -61,7 +29,7 @@ async function getVideo(id) {
     id: databaseVideo._id.toString(),
     title: databaseVideo.title,
     trainer: databaseVideo.trainerName,
-    trainerId: databaseVideo.trainerId?.toString(),
+    trainerId: databaseVideo.trainerId?.toString() || null,
     thumbnail: databaseVideo.thumbnail,
     videoUrl: databaseVideo.videoUrl,
     description: databaseVideo.description,
@@ -70,25 +38,11 @@ async function getVideo(id) {
     views: databaseVideo.views || "New",
     createdAt: databaseVideo.createdAt,
     uploadedAt: databaseVideo.uploadedAt,
-    isMockVideo: false,
   };
 }
 
 async function getVideoAccess(video, session) {
-  /*
-    Mock videos remain available to everyone.
-  */
-  if (video.isMockVideo) {
-    return {
-      isDemo: true,
-      hasAccess: true,
-    };
-  }
-
-  /*
-    A database video without a trainer relation cannot be
-    checked against booking access. Treat it as not playable.
-  */
+  // No trainer relation → cannot check access → treat as locked
   if (!video.trainerId) {
     return {
       isDemo: false,
@@ -96,69 +50,8 @@ async function getVideoAccess(video, session) {
     };
   }
 
-  /*
-    Admins and the trainer who owns this video always have access.
-  */
-  if (session?.user) {
-    const isAdmin = session.user.role === "admin";
-
-    const isTrainerOwner =
-      session.user.role === "trainer" &&
-      (await trainerOwnsVideo(session.user.id, video.id));
-
-    if (isAdmin || isTrainerOwner) {
-      return {
-        isDemo: false,
-        hasAccess: true,
-      };
-    }
-  }
-
-  /*
-    Get all videos from this trainer, keep approved content,
-    then sort old -> new.
-
-    The first entry is the trainer's oldest approved upload,
-    which is the free demo video.
-  */
-  const trainerVideos = await getVideosByTrainer(video.trainerId);
-
-  const approvedVideos = trainerVideos
-    .filter((item) => item.status === "approved")
-    .sort((firstVideo, secondVideo) => {
-      const firstDate = new Date(
-        firstVideo.createdAt || firstVideo.uploadedAt || 0
-      ).getTime();
-
-      const secondDate = new Date(
-        secondVideo.createdAt || secondVideo.uploadedAt || 0
-      ).getTime();
-
-      return firstDate - secondDate;
-    });
-
-  const firstUploadedVideo = approvedVideos[0];
-
-  /*
-    Compare MongoDB IDs safely.
-  */
-  const isDemo =
-    firstUploadedVideo &&
-    firstUploadedVideo._id.toString() === String(video.id);
-
-  /*
-    The demo is public.
-  */
-  if (isDemo) {
-    return {
-      isDemo: true,
-      hasAccess: true,
-    };
-  }
-
-  /*
-    Every other video requires login plus unlocked booking access.
-  */
+  // For user videos, we don't have a “demo” concept like public videos.
+  // Access is based purely on unlocked trainer videos via bookings.
   if (!session?.user?.id) {
     return {
       isDemo: false,
@@ -177,10 +70,10 @@ async function getVideoAccess(video, session) {
   };
 }
 
-export default async function VideoDetailPage({ params }) {
-  const { id } = await params;
+export default async function UserVideoDetailPage({ params }) {
+  const { videoId } = await params;
 
-  const video = await getVideo(id);
+  const video = await getVideo(videoId);
 
   if (!video) {
     notFound();
@@ -188,28 +81,22 @@ export default async function VideoDetailPage({ params }) {
 
   const session = await auth();
 
-  /*
-    Server-side authorization:
-    This must happen before passing `videoUrl` into VideoPlayer.
-  */
   const { isDemo, hasAccess } = await getVideoAccess(video, session);
 
   const trainerInitial = video.trainer?.charAt(0)?.toUpperCase() || "F";
 
-  /*
-    Never expose a locked video URL to an unauthorised browser.
-  */
+  // Only pass videoUrl if user has access
   const safeVideoUrl = hasAccess ? video.videoUrl : null;
 
   return (
     <section className="min-h-screen bg-gray-50 pt-24">
       <div className="mx-auto max-w-6xl px-6 pb-20 md:px-12">
         <Link
-          href="/videos"
+          href="/user/videos"
           className="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-black/55 transition-all duration-300 hover:-translate-x-1 hover:text-black"
         >
           <ArrowLeft size={17} />
-          Back to videos
+          Back to My Videos
         </Link>
 
         {/* Video player */}
@@ -231,7 +118,7 @@ export default async function VideoDetailPage({ params }) {
           <div>
             <Reveal delay={80}>
               <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-black/40 sm:text-xs">
-                {isDemo ? "Free demo video" : "Trainer video"}
+                {isDemo ? "Free demo video" : "Paid session video"}
               </p>
 
               <h1 className="text-3xl font-black leading-tight text-black sm:text-4xl md:text-5xl">
@@ -268,7 +155,7 @@ export default async function VideoDetailPage({ params }) {
                   {hasAccess ? (
                     <>
                       <PlayCircle size={17} />
-                      <span>{isDemo ? "Free demo" : "Unlocked"}</span>
+                      <span>Unlocked</span>
                     </>
                   ) : (
                     <>
