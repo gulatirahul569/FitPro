@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -11,14 +10,14 @@ import {
 
 export default function Hero() {
   return (
-    <section className="relative min-h-[calc(100vh-80px)] overflow-hidden bg-gray-50 text-black">
+    <section className="relative min-h-[100dvh] overflow-hidden bg-gray-50 text-black md:min-h-screen">
       {/* ================= BACKGROUND IMAGE ================= */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 h-full w-full">
         <picture>
           {/* Mobile background */}
           <source
             media="(max-width: 767px)"
-            srcSet="https://images.pexels.com/photos/24244667/pexels-photo-24244667.jpeg"
+            srcSet="https://images.pexels.com/photos/6811166/pexels-photo-6811166.jpeg"
           />
 
           {/* Desktop background */}
@@ -29,19 +28,19 @@ export default function Hero() {
           />
         </picture>
 
-        {/* Bright overlay */}
+        {/* Keep the original bright overlay on desktop; no blur effect added */}
         <div className="absolute inset-0 bg-white/2" />
       </div>
 
       {/* ================= HERO CONTENT ================= */}
-      <div className="relative mx-auto flex max-w-7xl items-center px-5 py-8 sm:px-6 sm:py-16 lg:min-h-[calc(100vh-80px)] lg:px-8 lg:py-20">
-        <div className="w-full max-w-2xl">
+      <div className="relative mx-auto  flex min-h-screen max-w-7xl items-center px-6 py-20 sm:px-6 sm:py-16 md:mt-0 md:min-h-0 lg:min-h-screen lg:px-8 lg:py-20">
+        <div className="w-full max-w-2xl mt-12">
           {/* Badge */}
           <div
-            className="animate-fade-up mb-5 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-3.5 py-2 text-xs font-medium text-black shadow-sm backdrop-blur-md sm:mb-6 sm:px-4 sm:text-sm"
+            className="animate-fade-up mb-8 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-3.5 py-2 text-xs font-medium text-black shadow-sm backdrop-blur-md sm:mb-6 sm:px-4 sm:text-sm"
             style={{ animationDelay: "0.1s" }}
           >
-            <span className="relative flex h-2 w-2">
+            <span className="relative flex h-2 w-2 shrink-0">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-black/40 opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-black" />
             </span>
@@ -65,7 +64,7 @@ export default function Hero() {
 
           {/* Description */}
           <p
-            className="animate-fade-up mt-5 max-w-xl text-sm leading-6 text-black/60 sm:mt-7 sm:text-lg sm:leading-7"
+            className="animate-fade-up mt-6 max-w-xl text-sm leading-6 text-black/60 sm:mt-7 sm:text-lg sm:leading-7"
             style={{ animationDelay: "0.4s" }}
           >
             Train with certified trainers, follow personalized programs, and
@@ -74,7 +73,7 @@ export default function Hero() {
 
           {/* Buttons */}
           <div
-            className="animate-fade-up mt-7 flex flex-col gap-3 sm:mt-9 sm:flex-row"
+            className="animate-fade-up mt-6 flex flex-col gap-3 sm:mt-9 sm:flex-row"
             style={{ animationDelay: "0.55s" }}
           >
             <Link
@@ -103,7 +102,7 @@ export default function Hero() {
 
           {/* Trust points */}
           <div
-            className="animate-fade-up mt-8 flex flex-col gap-3 text-sm text-white sm:mt-10 sm:flex-row sm:flex-wrap sm:gap-x-6 sm:gap-y-3"
+            className="animate-fade-up mt-10 grid grid-cols-1 gap-2.5 text-lg text-white sm:mt-10 sm:flex sm:flex-row sm:flex-wrap sm:gap-x-6 sm:gap-y-3"
             style={{ animationDelay: "0.7s" }}
           >
             <div className="flex items-center gap-2">
@@ -124,7 +123,7 @@ export default function Hero() {
 
           {/* Mobile stats */}
           <div
-            className="mt-8 grid grid-cols-2 gap-3 animate-fade-up sm:hidden"
+            className="mt-20 mb-5 grid grid-cols-2 gap-3 animate-fade-up sm:hidden"
             style={{ animationDelay: "0.85s" }}
           >
             <div className="min-w-0 rounded-2xl border border-black/10 bg-white/80 p-4 shadow-sm backdrop-blur-md transition-transform duration-300 hover:-translate-y-1">

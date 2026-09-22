@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import Reveal from "@/components/ui/Reveal";
 
+
 const categories = [
   {
     name: "Muscle Building",
@@ -39,25 +40,26 @@ const categories = [
   },
 ];
 
+
 export default function Categories() {
   return (
-    <section className="bg-gray-50 px-6 py-20 md:px-12 md:py-12 md:pt-5">
-      <div className="mx-auto max-w-7xl px-8">
+    <section className="bg-gray-50 px-6 py-12 sm:px-6 sm:py-16 md:px-8 md:py-20 lg:px-12">
+      <div className="mx-auto max-w-7xl sm:px-6 md:px-8">
         {/* Heading */}
         <Reveal>
-          <div className="mb-12 text-center">
+          <div className="mb-8 text-center sm:mb-10 md:mb-12">
             <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-black/40 sm:text-xs">
               Find Your Focus
             </p>
 
-            <h2 className="whitespace-nowrap text-3xl font-black uppercase leading-tight text-black sm:text-4xl md:text-5xl">
+            <h2 className="text-2xl font-black uppercase leading-tight text-black sm:text-3xl md:text-4xl lg:text-5xl">
               Train for your goal<span className="text-black/20">.</span>
             </h2>
           </div>
         </Reveal>
 
         {/* Category cards */}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-5 lg:grid-cols-4">
           {categories.map((category, index) => {
             const Icon = category.icon;
             const number = String(index + 1).padStart(2, "0");
@@ -66,7 +68,7 @@ export default function Categories() {
               <Reveal key={category.slug} delay={index * 100}>
                 <Link
                   href={`/trainers?category=${category.slug}`}
-                  className="group relative block h-[380px] overflow-hidden rounded-3xl bg-gray-200 sm:h-[420px] lg:h-[460px]"
+                  className="group relative block h-[280px] overflow-hidden rounded-2xl bg-gray-200 sm:h-[320px] md:h-[360px] lg:h-[420px]"
                 >
                   {/* Background image */}
                   <img
@@ -79,35 +81,35 @@ export default function Categories() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
 
                   {/* Top content */}
-                  <div className="absolute left-5 right-5 top-5 flex items-center justify-between">
-                    <span className="text-xs font-bold tracking-[0.18em] text-white/70">
+                  <div className="absolute left-3 right-3 top-3 flex items-center justify-between sm:left-4 sm:right-4 sm:top-4">
+                    <span className="text-[10px] font-bold tracking-[0.18em] text-white/70 sm:text-xs">
                       {number}
                     </span>
 
-                    <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/30 bg-black/20 text-white backdrop-blur-sm transition-all duration-300 group-hover:scale-110 group-hover:bg-white group-hover:text-black">
-                      <Icon size={20} strokeWidth={2} />
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black/20 text-white backdrop-blur-sm transition-all duration-300 group-hover:scale-110 group-hover:bg-white group-hover:text-black sm:h-10 sm:w-10">
+                      <Icon size={18} strokeWidth={2} className="sm:size-[20]" />
                     </div>
                   </div>
 
                   {/* Bottom content */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <p className="mb-2 text-xs font-medium uppercase tracking-[0.16em] text-white/60">
+                  <div className="absolute bottom-0 left-0 right-0 p-4 text-white sm:p-5 md:p-6">
+                    <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.16em] text-white/60 sm:text-xs">
                       Training category
                     </p>
 
-                    <div className="flex items-end justify-between gap-4">
+                    <div className="flex items-end justify-between gap-3 sm:gap-4">
                       <div>
-                        <h3 className="text-2xl font-black leading-tight">
+                        <h3 className="text-base font-black leading-tight sm:text-lg md:text-xl lg:text-2xl">
                           {category.name}
                         </h3>
 
-                        <p className="mt-2 max-w-[210px] text-sm leading-6 text-white/75">
+                        <p className="mt-1.5 max-w-[140px] text-xs leading-5 text-white/75 sm:mt-2 sm:max-w-[180px] sm:text-sm sm:leading-6 md:max-w-[210px]">
                           {category.description}
                         </p>
                       </div>
 
-                      <span className="mb-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-black transition-all duration-300 group-hover:-translate-y-1 group-hover:translate-x-1">
-                        <ArrowUpRight size={19} />
+                      <span className="mb-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-black transition-all duration-300 group-hover:-translate-y-1 group-hover:translate-x-1 sm:h-10 sm:w-10 md:h-11 md:w-11">
+                        <ArrowUpRight size={17} className="sm:size-[19]" />
                       </span>
                     </div>
                   </div>
