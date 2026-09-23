@@ -10,7 +10,7 @@ import {
 
 export default function Hero() {
   return (
-    <section className="relative min-h-[100dvh] overflow-hidden bg-gray-50 text-black md:min-h-screen">
+    <section className="relative min-h-screen overflow-hidden bg-gray-50 text-black md:min-h-screen">
       {/* ================= BACKGROUND IMAGE ================= */}
       <div className="absolute inset-0 h-full w-full">
         <picture>
@@ -33,11 +33,11 @@ export default function Hero() {
       </div>
 
       {/* ================= HERO CONTENT ================= */}
-      <div className="relative mx-auto  flex min-h-screen max-w-7xl items-center px-6 py-20 sm:px-6 sm:py-16 md:mt-0 md:min-h-0 lg:min-h-screen lg:px-8 lg:py-20">
-        <div className="w-full max-w-2xl mt-12">
+      <div className="relative mx-auto  flex  max-w-7xl items-center px-6 sm:px-6 sm:py-16 md:mt-0 md:min-h-0 lg:min-h-screen lg:px-8 lg:py-20">
+        <div className="w-full max-w-2xl  mt-12">
           {/* Badge */}
           <div
-            className="animate-fade-up mb-8 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-3.5 py-2 text-xs font-medium text-black shadow-sm backdrop-blur-md sm:mb-6 sm:px-4 sm:text-sm"
+            className="animate-fade-up mb-4 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/80 px-3.5 py-2 text-xs font-medium text-black shadow-sm backdrop-blur-md sm:mb-6 sm:px-4 sm:text-sm"
             style={{ animationDelay: "0.1s" }}
           >
             <span className="relative flex h-2 w-2 shrink-0">
@@ -123,7 +123,7 @@ export default function Hero() {
 
           {/* Mobile stats */}
           <div
-            className="mt-20 mb-5 grid grid-cols-2 gap-3 animate-fade-up sm:hidden"
+            className="mt-10 mb-5 grid grid-cols-2 gap-3 animate-fade-up sm:hidden"
             style={{ animationDelay: "0.85s" }}
           >
             <div className="min-w-0 rounded-2xl border border-black/10 bg-white/80 p-4 shadow-sm backdrop-blur-md transition-transform duration-300 hover:-translate-y-1">

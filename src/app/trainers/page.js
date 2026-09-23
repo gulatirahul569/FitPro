@@ -92,7 +92,7 @@ function TrainersContent() {
   };
 
   return (
-    <section className="min-h-screen bg-gray-50 pt-20">
+    <section className="min-h-screen bg-gray-50 md:pt-10 lg:pt-20">
       {/* =====================================================
           TOP INTRODUCTION
       ====================================================== */}
@@ -101,9 +101,9 @@ function TrainersContent() {
          
 
           <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
-            {/* Image on left */}
+            {/* Image on left (desktop). Mobile: order-2 pushes it below the text — lg:order-none restores default (image-first) order on desktop. */}
             <div
-              className={`relative transition-all duration-700 ${
+              className={`relative order-2 transition-all duration-700 lg:order-none ${
                 isLoaded
                   ? "translate-x-0 opacity-100"
                   : "-translate-x-8 opacity-0"
@@ -132,9 +132,9 @@ function TrainersContent() {
               </div>
             </div>
 
-            {/* Content on right */}
+            {/* Content on right (desktop). Mobile: order-1 brings it above the image — lg:order-none restores default order on desktop. */}
             <div
-              className={`transition-all delay-100 duration-700 ${
+              className={`order-1 transition-all delay-100 duration-700 lg:order-none ${
                 isLoaded
                   ? "translate-x-0 opacity-100"
                   : "translate-x-8 opacity-0"
@@ -261,7 +261,7 @@ function TrainersContent() {
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Search by name, specialization, or location..."
-                  className="w-full rounded-2xl border border-black/10 bg-white py-3.5 pl-12 pr-11 text-sm text-black outline-none transition-all duration-300 placeholder:text-black/35 focus:border-black focus:ring-4 focus:ring-black/5"
+                  className="w-full rounded-full border border-black/10 bg-white py-3 pl-12 pr-11 text-sm text-black outline-none transition-all duration-300 placeholder:text-black/35 focus:border-black focus:ring-4 focus:ring-black/5 lg:rounded-2xl lg:py-3.5"
                 />
 
                 {query && (
@@ -286,7 +286,7 @@ function TrainersContent() {
                 <select
                   value={category}
                   onChange={(event) => setCategory(event.target.value)}
-                  className="w-full cursor-pointer appearance-none rounded-2xl border border-black/10 bg-white py-3.5 pl-11 pr-10 text-sm font-medium text-black outline-none transition-all duration-300 focus:border-black focus:ring-4 focus:ring-black/5"
+                  className="w-full cursor-pointer appearance-none rounded-full border border-black/10 bg-white py-3 pl-11 pr-10 text-sm font-medium text-black outline-none transition-all duration-300 focus:border-black focus:ring-4 focus:ring-black/5 lg:rounded-2xl lg:py-3.5"
                 >
                   {categories.map((item) => (
                     <option key={item.value} value={item.value}>
@@ -302,13 +302,13 @@ function TrainersContent() {
             </div>
 
             {/* Goal chips */}
-            <div className="mt-4 flex flex-wrap justify-center gap-5 border-t border-black/5 pt-4">
+            <div className="mt-4 flex flex-nowrap gap-2 overflow-x-auto border-t border-black/5 pt-4 [-ms-overflow-style:none] [mask-image:linear-gradient(to_right,black_88%,transparent)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:flex-wrap lg:justify-center lg:gap-5 lg:overflow-visible lg:[mask-image:none]">
               {categories.map((item) => (
                 <button
                   key={item.value || "all-goals"}
                   type="button"
                   onClick={() => setCategory(item.value)}
-                  className={`rounded-full px-4 py-2 text-xs font-semibold transition-all duration-300 ${
+                  className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2.5 text-xs font-semibold transition-all duration-300 lg:py-2 ${
                     category === item.value
                       ? "bg-black text-white shadow-sm"
                       : "border border-black/10 bg-white text-black/55 hover:-translate-y-0.5 hover:border-black/25 hover:text-black"
@@ -360,7 +360,7 @@ function TrainersContent() {
 
         {/* Trainer cards */}
         {isLoading ? (
-          <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[1, 2, 3, 4, 5, 6].map((item) => (
               <div
                 key={item}

@@ -77,15 +77,15 @@ export default async function GymsPage() {
   ];
 
   return (
-    <section className="min-h-screen overflow-hidden bg-gray-50 pt-10">
+    <section className="min-h-screen overflow-hidden bg-gray-50 md:pt-10 lg:pt-10">
       {/* =====================================================
           INTRODUCTION
       ====================================================== */}
       <div className="border-b border-black/10 bg-gray-50 px-6 py-12 md:px-12 md:py-16">
         <div className="mx-auto max-w-7xl px-0 md:px-10">
           <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
-            {/* Image */}
-            <Reveal className="lg:pr-2">
+            {/* Image (desktop). Mobile: order-2 pushes it below the text — lg:order-none restores default order on desktop. */}
+            <Reveal className="order-2 lg:order-none lg:pr-2">
               <div className="group relative">
                 {/* Offset frame */}
                 <div className="absolute -left-4 -top-4 hidden h-full w-full rounded-3xl border border-black/10 bg-white md:block" />
@@ -112,8 +112,8 @@ export default async function GymsPage() {
               </div>
             </Reveal>
 
-            {/* Explanation */}
-            <div>
+            {/* Explanation (desktop). Mobile: order-1 brings it above the image — lg:order-none restores default order on desktop. */}
+            <div className="order-1 lg:order-none">
               <Reveal delay={100}>
                 <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.22em] text-black/40 sm:text-xs">
                   Partner Gyms

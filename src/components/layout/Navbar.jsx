@@ -6,8 +6,6 @@ import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import {
   Dumbbell,
-  Menu,
-  X,
   User,
   Calendar,
   BookOpen,
@@ -32,7 +30,6 @@ export default function Navbar() {
   const { data: session, status } = useSession();
   const pathname = usePathname();
 
-  const [mobileMenu, setMobileMenu] = useState(false);
   const [profileMenu, setProfileMenu] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -73,7 +70,6 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     setProfileMenu(false);
-    setMobileMenu(false);
 
     await signOut({
       callbackUrl: "/",
@@ -81,16 +77,16 @@ export default function Navbar() {
   };
 
   return (
+    // Mobile now uses BottomNav instead of a top header — hidden entirely
+    // below md:. Everything below this point is desktop-only and unchanged.
     <header
-      className={`z-50 transition-colors duration-300 ${
+      className={`z-50 hidden transition-colors duration-300 md:block ${
         isDashboard
           ? "relative border-b border-gray-200 bg-white"
-          : // Mobile: always fixed + solid/clear, never transparent.
-            // Desktop (md:): original fixed + glass-at-top / blur-on-scroll behavior, untouched.
-            `fixed inset-x-0 top-0 border-b border-white/20 bg-white/70 shadow-sm shadow-black/5 backdrop-blur-xl ${
+          : `fixed inset-x-0 top-0 ${
               isGlassTransparent
-                ? "md:border-white/10 md:bg-transparent md:shadow-none md:backdrop-blur-none"
-                : ""
+                ? "border-b border-white/10 bg-transparent"
+                : "border-b border-white/20 bg-white/70 shadow-sm shadow-black/5 backdrop-blur-xl"
             }`
       }`}
     >
@@ -98,32 +94,32 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" className="group flex items-center gap-2">
           <div
-            className={`flex h-10 w-10 items-center justify-center rounded-xl bg-black text-white transition-all duration-300 ease-out group-hover:rotate-12 ${
+            className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-300 ease-out group-hover:rotate-12 ${
               isGlassTransparent
-                ? "md:border md:border-white/20 md:bg-white/10 md:backdrop-blur-md"
-                : ""
+                ? "border border-white/20 bg-white/10 text-white backdrop-blur-md"
+                : "bg-black text-white"
             }`}
           >
             <Dumbbell size={22} />
           </div>
 
           <span
-            className={`text-3xl font-extrabold tracking-tight text-black transition-colors duration-300 ${
-              isGlassTransparent ? "md:text-white" : ""
+            className={`text-3xl font-extrabold tracking-tight transition-colors duration-300 ${
+              isGlassTransparent ? "text-white" : "text-black"
             }`}
           >
             FIT
             <span
-              className={`text-gray-500 ${
-                isGlassTransparent ? "md:text-white/50" : ""
-              }`}
+              className={
+                isGlassTransparent ? "text-white/50" : "text-gray-500"
+              }
             >
               PRO
             </span>
           </span>
         </Link>
 
-        {/* Desktop navigation (unchanged — hidden on mobile) */}
+        {/* Desktop navigation */}
         <nav className="hidden items-center gap-8 md:flex">
           {navLinks.map((link) => (
             <Link
@@ -146,7 +142,7 @@ export default function Navbar() {
           ))}
         </nav>
 
-        {/* Desktop actions (unchanged — hidden on mobile) */}
+        {/* Desktop actions */}
         <div className="hidden items-center gap-3 md:flex">
           {!isLoggedIn && (
             <>
@@ -386,244 +382,6 @@ export default function Navbar() {
             </div>
           )}
         </div>
-
-        {/* Mobile menu button — always solid black icon, never shown on desktop */}
-        <button
-          type="button"
-          onClick={() => setMobileMenu((current) => !current)}
-          className="rounded-lg p-2 md:hidden"
-          aria-label="Toggle menu"
-          aria-expanded={mobileMenu}
-        >
-          <div className="relative h-6 w-6">
-            <Menu
-              size={24}
-              className={`absolute inset-0 text-black transition-all duration-300 ${
-                mobileMenu
-                  ? "scale-50 rotate-90 opacity-0"
-                  : "scale-100 rotate-0 opacity-100"
-              }`}
-            />
-
-            <X
-              size={24}
-              className={`absolute inset-0 text-black transition-all duration-300 ${
-                mobileMenu
-                  ? "scale-100 rotate-0 opacity-100"
-                  : "scale-50 -rotate-90 opacity-0"
-              }`}
-            />
-          </div>
-        </button>
-      </div>
-
-      {/* Mobile menu */}
-      <div
-        className={`overflow-hidden border-t border-gray-200 bg-white transition-all duration-300 ease-out md:hidden ${
-          mobileMenu
-            ? "max-h-[45rem] opacity-100"
-            : "max-h-0 border-t-0 opacity-0"
-        }`}
-      >
-        <nav className="flex flex-col gap-4 px-6 py-5">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setMobileMenu(false)}
-              className="font-medium text-gray-700 transition-colors hover:text-black"
-            >
-              {link.label}
-            </Link>
-          ))}
-
-          {!isLoggedIn && (
-            <div className="mt-2 flex flex-col gap-3">
-              <Link
-                href="/become-trainer"
-                onClick={() => setMobileMenu(false)}
-                className="rounded-full border border-black px-5 py-3 text-center font-semibold text-black transition-colors hover:bg-black hover:text-white"
-              >
-                Become a Trainer
-              </Link>
-
-              <Link
-                href="/login"
-                onClick={() => setMobileMenu(false)}
-                className="rounded-full bg-black px-5 py-3 text-center font-semibold text-white transition-colors hover:bg-gray-800"
-              >
-                Login
-              </Link>
-            </div>
-          )}
-
-          {isLoggedIn && (
-            <div
-              className="mt-2 flex flex-col gap-1 border-t border-gray-100 pt-4"
-            >
-              <div className="flex items-center gap-3 px-1 pb-3">
-                <div
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-sm font-semibold text-white"
-                >
-                  {firstName?.charAt(0)?.toUpperCase()}
-                </div>
-
-                <div>
-                  <p
-                    className="text-sm font-semibold text-black"
-                  >
-                    {user?.name}
-                  </p>
-
-                  <p
-                    className="text-xs text-gray-500"
-                  >
-                    {user?.email}
-                  </p>
-
-                  {role && (
-                    <p
-                      className="text-xs capitalize text-gray-400"
-                    >
-                      {role}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {isNormalUser && (
-                <>
-                  <Link
-                    href="/become-trainer"
-                    onClick={() => setMobileMenu(false)}
-                    className="mb-2 rounded-full border border-black px-5 py-3 text-center text-sm font-semibold text-black transition-colors hover:bg-black hover:text-white"
-                  >
-                    Become a Trainer
-                  </Link>
-
-                  <ProfileMenuItem
-                    href="/user/profile"
-                    icon={User}
-                    label="My Profile"
-                    onClick={() => setMobileMenu(false)}
-                  />
-
-                  <ProfileMenuItem
-                    href="/user/bookings"
-                    icon={Calendar}
-                    label="My Bookings"
-                    onClick={() => setMobileMenu(false)}
-                  />
-
-                  <ProfileMenuItem
-                    href="/user/training"
-                    icon={BookOpen}
-                    label="My Training"
-                    onClick={() => setMobileMenu(false)}
-                  />
-
-                  <ProfileMenuItem
-                    href="/user/settings"
-                    icon={Settings}
-                    label="Settings"
-                    onClick={() => setMobileMenu(false)}
-                  />
-                </>
-              )}
-
-              {isTrainer && (
-                <>
-                  <ProfileMenuItem
-                    href="/trainer/profile"
-                    icon={User}
-                    label="My Profile"
-                    onClick={() => setMobileMenu(false)}
-                  />
-
-                  <ProfileMenuItem
-                    href="/trainer/dashboard"
-                    icon={LayoutDashboard}
-                    label="Trainer Dashboard"
-                    onClick={() => setMobileMenu(false)}
-                  />
-
-                  <ProfileMenuItem
-                    href="/trainer/settings"
-                    icon={Settings}
-                    label="Settings"
-                    onClick={() => setMobileMenu(false)}
-                  />
-                </>
-              )}
-
-              {isGymOwner && (
-                <>
-                  <ProfileMenuItem
-                    href="/gym-owner/dashboard"
-                    icon={Building2}
-                    label="Gym Owner Dashboard"
-                    onClick={() => setMobileMenu(false)}
-                  />
-
-                  <ProfileMenuItem
-                    href="/gym-owner/profile"
-                    icon={Building2}
-                    label="Gym Profile"
-                    onClick={() => setMobileMenu(false)}
-                  />
-
-                  <ProfileMenuItem
-                    href="/gym-owner/trainers"
-                    icon={Calendar}
-                    label="Trainer Requests"
-                    onClick={() => setMobileMenu(false)}
-                  />
-
-                  <ProfileMenuItem
-                    href="/gym-owner/settings"
-                    icon={Settings}
-                    label="Settings"
-                    onClick={() => setMobileMenu(false)}
-                  />
-                </>
-              )}
-
-              {isAdmin && (
-                <>
-                  <ProfileMenuItem
-                    href="/admin/profile"
-                    icon={User}
-                    label="My Profile"
-                    onClick={() => setMobileMenu(false)}
-                  />
-
-                  <ProfileMenuItem
-                    href="/admin/dashboard"
-                    icon={ShieldCheck}
-                    label="Admin Dashboard"
-                    onClick={() => setMobileMenu(false)}
-                  />
-
-                  <ProfileMenuItem
-                    href="/admin/settings"
-                    icon={Settings}
-                    label="Settings"
-                    onClick={() => setMobileMenu(false)}
-                  />
-                </>
-              )}
-
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="mt-1 flex items-center gap-3 px-1 py-2.5 text-sm font-medium text-red-500 transition-colors hover:text-red-600"
-              >
-                <LogOut size={17} />
-                Logout
-              </button>
-            </div>
-          )}
-        </nav>
       </div>
     </header>
   );

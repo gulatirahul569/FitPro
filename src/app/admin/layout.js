@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import {
   LayoutDashboard,
   Users,
@@ -15,6 +16,7 @@ import {
   Settings,
   ClipboardCheck,
   ArrowLeft,
+  LogOut,
   Menu,
   X,
 } from "lucide-react";
@@ -78,15 +80,26 @@ export default function AdminLayout({ children }) {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const handleLogout = async () => {
+    setSidebarOpen(false);
+
+    await signOut({
+      callbackUrl: "/",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* =====================================================
           MOBILE OVERLAY
+          Stops above the fixed BottomNav (bottom-16, matching its
+          own md: breakpoint) and sits below it in z-index, so the
+          tab bar stays visible and tappable while this is open.
       ====================================================== */}
 
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-x-0 top-0 bottom-16 z-30 bg-black/50 md:bottom-0 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -96,7 +109,7 @@ export default function AdminLayout({ children }) {
       ====================================================== */}
 
       <aside
-        className={`fixed lg:sticky top-0 left-0 h-screen w-64 bg-white border-r border-gray-200 flex flex-col z-50 transition-transform duration-300 ${
+        className={`fixed lg:sticky top-0 bottom-16 md:bottom-0 lg:h-screen left-0 w-64 bg-white border-r border-gray-200 flex flex-col z-40 transition-transform duration-300 ${
           sidebarOpen
             ? "translate-x-0"
             : "-translate-x-full lg:translate-x-0"
@@ -150,17 +163,26 @@ export default function AdminLayout({ children }) {
         </nav>
 
         {/* =================================================
-            BACK TO WEBSITE
+            BACK TO WEBSITE (desktop) / LOGOUT (mobile)
         ================================================== */}
 
         <div className="p-4 border-t border-gray-100">
           <Link
             href="/"
-            className="flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-black transition-colors"
+            className="hidden items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-black transition-colors lg:flex"
           >
             <ArrowLeft size={18} />
             Back to Website
           </Link>
+
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex w-full items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors lg:hidden"
+          >
+            <LogOut size={18} />
+            Logout
+          </button>
         </div>
       </aside>
 
@@ -173,7 +195,7 @@ export default function AdminLayout({ children }) {
             MOBILE TOP BAR
         ================================================== */}
 
-        <div className="lg:hidden sticky top-0 z-30 h-16 bg-white border-b border-gray-200 flex items-center px-4">
+        <div className="lg:hidden sticky top-0 z-20 h-16 bg-white border-b border-gray-200 flex items-center px-4">
           <button
             onClick={() => setSidebarOpen(true)}
             className="text-gray-700 hover:text-black transition-colors"

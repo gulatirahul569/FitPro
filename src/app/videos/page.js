@@ -73,9 +73,9 @@ function VideosContent() {
           
 
           <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
-            {/* ================= IMAGE / LEFT ================= */}
+            {/* ================= IMAGE / LEFT (desktop). Mobile: order-2 pushes it below the text — lg:order-none restores default order on desktop. ================= */}
             <div
-              className={`relative transition-all duration-700 ${
+              className={`relative order-2 transition-all duration-700 lg:order-none ${
                 isLoaded
                   ? "translate-x-0 opacity-100"
                   : "-translate-x-8 opacity-0"
@@ -105,9 +105,9 @@ function VideosContent() {
               </div>
             </div>
 
-            {/* ================= CONTENT / RIGHT ================= */}
+            {/* ================= CONTENT / RIGHT (desktop). Mobile: order-1 brings it above the image — lg:order-none restores default order on desktop. ================= */}
             <div
-              className={`transition-all delay-100 duration-700 ${
+              className={`order-1 transition-all delay-100 duration-700 lg:order-none ${
                 isLoaded
                   ? "translate-x-0 opacity-100"
                   : "translate-x-8 opacity-0"

@@ -202,7 +202,7 @@ export default async function VideoDetailPage({ params }) {
   const safeVideoUrl = hasAccess ? video.videoUrl : null;
 
   return (
-    <section className="min-h-screen bg-gray-50 pt-24">
+    <section className="min-h-screen bg-gray-50 pt-10 md:pt-20 lg:pt-20">
       <div className="mx-auto max-w-6xl px-6 pb-20 md:px-12">
         <Link
           href="/videos"

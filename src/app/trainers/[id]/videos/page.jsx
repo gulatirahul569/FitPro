@@ -65,7 +65,7 @@ export default async function TrainerVideosPage({ params }) {
   }
 
   return (
-    <section className="min-h-screen bg-gray-50 pt-24">
+    <section className="min-h-screen bg-gray-50 md:pt-20 lg:pt-20">
       <div className="mx-auto max-w-7xl px-6 pb-20 md:px-12">
         {/* Back button */}
         <Link

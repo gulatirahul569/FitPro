@@ -42,7 +42,7 @@ export default async function GymDetailPage({ params }) {
   const amenities = gym.amenities || [];
 
   return (
-    <section className="min-h-screen overflow-hidden bg-gray-50 pt-20">
+    <section className="min-h-screen overflow-hidden bg-gray-50 lg:pt-20">
       {/* =====================================================
           GYM HERO
       ====================================================== */}

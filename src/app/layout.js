@@ -3,6 +3,8 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import SessionWrapper from "@/components/providers/SessionWrapper";
 import ScrollToTop from "@/components/ui/ScrollToTop";
+import BottomNav from "@/components/layout/Bottomnav";
+
 
 export const metadata = {
   title: "FitPro - Transform Your Body",
@@ -15,7 +17,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         <SessionWrapper>
-          <Navbar />
+          <Navbar /><BottomNav />
           {children}
           <ScrollToTop />
           <Footer />
