@@ -127,7 +127,7 @@ export default function TrainerLayout({ children }) {
           <span className="ml-4 font-semibold text-black">Trainer Dashboard</span>
         </div>
 
-        <main className="p-6 md:p-8">{children}</main>
+        <main className="p-4 md:p-8">{children}</main>
       </div>
     </div>
   );

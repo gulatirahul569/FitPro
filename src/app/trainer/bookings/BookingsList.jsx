@@ -51,7 +51,7 @@ export default function BookingsList({ initialBookings }) {
   return (
     <div>
       {/* Filter pills */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex flex-nowrap gap-2 overflow-x-auto border-t border-black/5 pt-4 [-ms-overflow-style:none] [mask-image:linear-gradient(to_right,black_88%,transparent)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:flex-wrap lg:justify-center lg:gap-8 lg:overflow-visible lg:[mask-image:none] mb-6">
         {statusFilters.map((f) => (
           <button
             key={f.value}

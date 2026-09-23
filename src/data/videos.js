@@ -15,7 +15,7 @@ export const videos = [
     id: 2,
     title: "20-Min Home Cardio Blast",
     trainerId: 4,
-    trainer: "Vikram Rathore",
+    trainer: "Vikram Rathi",
     thumbnail: "https://images.pexels.com/photos/4162449/pexels-photo-4162449.jpeg",
     rating: 4.8,
     category: "fitness-cardio",

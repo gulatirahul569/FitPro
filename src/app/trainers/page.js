@@ -97,7 +97,7 @@ function TrainersContent() {
           TOP INTRODUCTION
       ====================================================== */}
       <div className="border-b border-black/10 bg-gray-50 px-6 py-12 md:px-12 md:py-12">
-        <div className="mx-auto max-w-7xl px-6">
+        <div className="mx-auto max-w-7xl">
          
 
           <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
