@@ -64,7 +64,7 @@ function VideosContent() {
   };
 
   return (
-    <section className="min-h-screen bg-white pt-20">
+    <section className="min-h-screen bg-white md:pt-20 lg:pt-20">
       {/* =====================================================
           TOP INTRODUCTION
       ====================================================== */}

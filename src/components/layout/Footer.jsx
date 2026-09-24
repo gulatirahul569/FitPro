@@ -182,13 +182,13 @@ export default function Footer() {
       </Reveal>
 
       {/* Bottom footer */}
-      <div className="border-t border-white/10">
+      <div className="border-t border-white/10 ">
         <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-6 py-6 text-sm text-white/45 md:flex-row md:justify-between md:px-12">
           <p className="text-center">
             © {new Date().getFullYear()} FitPro. All rights reserved.
           </p>
 
-          <div className="flex flex-wrap justify-center gap-x-5 gap-y-2">
+          <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 mb-12 lg:mb-2">
             <Link
               href="/privacy"
               className="transition-colors duration-200 hover:text-white"

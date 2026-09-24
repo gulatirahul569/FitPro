@@ -48,7 +48,7 @@ export default function BottomNav() {
     },
     {
       href: profileHref,
-      label: isLoggedIn ? "Profile" : "Login",
+      label: isLoggedIn ? "Dashboard" : "Login",
       icon: isLoggedIn ? User : LogIn,
       isActive: isLoggedIn ? isDashboard : pathname === "/login",
     },
